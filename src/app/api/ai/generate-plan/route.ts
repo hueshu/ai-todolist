@@ -3,7 +3,7 @@ import OpenAI from 'openai'
 import { DailyPlanRequest, DailyPlanResponse, Task } from '@/types'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
-import { getBeijingTime, formatBeijingTime } from '@/lib/timezone'
+import { getBeijingTime, formatBeijingTime, getBeijingHourMinute } from '@/lib/timezone'
 
 function getOpenAI() {
   const apiKey = process.env.OPENAI_API_KEY
@@ -89,29 +89,51 @@ export async function POST(request: NextRequest) {
     // 处理固定事件
     const todayFixedEvents = formatFixedEventsForPrompt(body.fixedEvents || [], requestDate)
     
-    // 获取当前时间或指定的开始时间
-    const startTime = body.startTime ? new Date(body.startTime) : getBeijingTime()
-    // 确保使用本地时间（北京时间）
-    const currentHour = startTime.getHours()
-    const currentMinute = startTime.getMinutes()
-    const actualStartTime = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`
+    // 优先使用直接传递的时间字符串
+    let actualStartTime: string
+    let startTime: Date
+    
+    if (body.startTimeString) {
+      // 使用前端传递的时间字符串
+      actualStartTime = body.startTimeString
+      const [hours, minutes] = actualStartTime.split(':').map(Number)
+      startTime = new Date()
+      startTime.setHours(hours, minutes, 0, 0)
+      console.log('[时间处理] 使用前端传递的时间字符串:', actualStartTime)
+    } else if (body.startTime) {
+      // 回退到Date对象处理
+      startTime = new Date(body.startTime)
+      const currentHour = startTime.getHours()
+      const currentMinute = startTime.getMinutes()
+      actualStartTime = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`
+      console.log('[时间处理] 使用Date对象处理，结果:', actualStartTime)
+    } else {
+      // 使用服务器当前北京时间
+      const { hour: currentHour, minute: currentMinute } = getBeijingHourMinute()
+      actualStartTime = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`
+      startTime = new Date()
+      startTime.setHours(currentHour, currentMinute, 0, 0)
+      console.log('[时间处理] 使用服务器当前北京时间:', actualStartTime)
+    }
     
     // 添加时区调试信息
     console.log('[时区信息] 环境变量TZ:', process.env.TZ)
-    console.log('[时区信息] 开始时间:', startTime.toISOString())
-    console.log('[时区信息] 本地时间字符串:', startTime.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }))
-    console.log('[时区信息] 实际开始时间:', actualStartTime)
+    console.log('[时区信息] 服务器当前时间:', new Date().toString())
+    console.log('[时区信息] 服务器时区偏移:', new Date().getTimezoneOffset())
+    console.log('[时区信息] 最终使用的开始时间:', actualStartTime)
+    console.log('[时区信息] 停止工作时间:', workEndTime)
     
     
     // 解析停止工作时间
     const workEndTime = body.workEndTime || '18:00'
     
     // 简化版提示词，避免长度过长导致API失败
-    const prompt = `作为时间管理专家，生成今日工作计划。
+    const prompt = `作为时间管理专家，生成今日工作计划。注意：所有时间都是北京时间（UTC+8）。
 
 基本信息：
-- 可用时间：${body.availableHours}小时，从${actualStartTime}开始
-- 停止工作时间：${workEndTime}（请确保所有任务在此时间前完成）
+- 当前北京时间：${actualStartTime}
+- 可用时间：${body.availableHours}小时，从${actualStartTime}开始（北京时间）
+- 停止工作时间：${workEndTime}（北京时间，请确保所有任务在此时间前完成）
 - 工作风格：${body.preferences.workStyle}
 - 深度工作块：${body.preferences.focusBlocks}个，每${body.preferences.breakFrequency}分钟休息
 

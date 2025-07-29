@@ -8,7 +8,7 @@ import { useStore } from '@/lib/store'
 import { Sparkles, Send, Calendar, ListTodo, Clock, Coffee, Target } from 'lucide-react'
 import { DailyPlanResponse } from '@/types'
 import { cn } from '@/lib/utils'
-import { getBeijingTime } from '@/lib/timezone'
+import { getBeijingTime, getBeijingHourMinute } from '@/lib/timezone'
 
 export function AIAssistant() {
   const [message, setMessage] = useState('')
@@ -36,7 +36,14 @@ export function AIAssistant() {
       }
       
       // 在点击按钮时获取当前北京时间作为起始时间点
-      const now = getBeijingTime()
+      const now = new Date()
+      // 使用新的工具函数获取北京时间的时和分
+      const { hour: currentHour, minute: currentMinute } = getBeijingHourMinute()
+      const startTimeString = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`
+      console.log('[前端] 使用getBeijingHourMinute获取时间')
+      console.log('[前端] 北京时间时:', currentHour, '分:', currentMinute)
+      console.log('[前端] 发送的开始时间:', startTimeString)
+      console.log('[前端] 本地Date对象:', now.toString())
       
       // 构建包含项目信息的任务数据
       const tasksWithProjectInfo = poolTasks.map(task => {
@@ -79,6 +86,7 @@ export function AIAssistant() {
         body: JSON.stringify({
           date: now,
           startTime: now, // 添加起始时间
+          startTimeString: startTimeString, // 直接传递时间字符串
           workEndTime: workEndTime, // 添加停止工作时间
           availableHours: availableHours,
           existingTasks: tasksWithProjectInfo,

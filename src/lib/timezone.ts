@@ -140,3 +140,17 @@ export function getBeijingTimeString(): string {
     hour12: false
   })
 }
+
+/**
+ * 获取北京时间的时和分
+ */
+export function getBeijingHourMinute(): { hour: number; minute: number } {
+  const beijingTimeStr = new Date().toLocaleString('zh-CN', {
+    timeZone: 'Asia/Shanghai',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  })
+  const [hour, minute] = beijingTimeStr.split(':').map(Number)
+  return { hour, minute }
+}
