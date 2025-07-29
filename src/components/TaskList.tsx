@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useStore } from '@/lib/store'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { CheckCircle2, Circle, Clock, AlertCircle, FolderOpen, Tag, Calendar, Edit2, Trash2, MoreVertical, Link } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, AlertCircle, FolderOpen, Tag, Calendar, Edit2, Trash2, MoreVertical, Link, Building2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TaskDetailModal } from './TaskDetailModal'
 import { TaskCompletionDialog } from './TaskCompletionDialog'
@@ -34,6 +34,7 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
   
   const tasks = useStore((state) => state.tasks)
   const projects = useStore((state) => state.projects)
+  const industries = useStore((state) => state.industries)
   const updateTask = useStore((state) => state.updateTask)
   const deleteTask = useStore((state) => state.deleteTask)
 
@@ -229,6 +230,7 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
       ) : (
         filteredTasks.map((task) => {
           const project = getProject(task.projectId)
+          const industry = project?.industryId ? industries.find(i => i.id === project.industryId) : null
           
           return (
             <Card key={task.id} className={cn(
@@ -338,6 +340,14 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
                         <span className="flex items-center gap-1.5 text-blue-600 font-medium">
                           <FolderOpen className="w-3.5 h-3.5" />
                           {project.name}
+                        </span>
+                      )}
+                      
+                      {/* 行业 */}
+                      {industry && (
+                        <span className="flex items-center gap-1.5 text-purple-600 font-medium">
+                          <Building2 className="w-3.5 h-3.5" />
+                          {industry.name}
                         </span>
                       )}
                       
