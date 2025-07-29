@@ -142,10 +142,29 @@ ${!isUrlValid || !isKeyValid ? '\n⚠️  请检查Vercel环境变量配置！' 
       
       await addTask(newTaskData)
       setTestResult(prev => prev + `\n✅ 通过Store创建任务成功!`)
+      
+      // 等待一下让状态更新
+      await new Promise(resolve => setTimeout(resolve, 100))
       setTestResult(prev => prev + `\n📊 创建后任务数: ${tasks.length}`)
+      
+      // 再次手动刷新确认
+      await loadTasks()
+      setTestResult(prev => prev + `\n🔄 再次刷新后任务数: ${tasks.length}`)
       
     } catch (error) {
       setTestResult(prev => prev + `\n❌ Store操作失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const forceRefresh = async () => {
+    setIsLoading(true)
+    try {
+      await loadTasks()
+      setTestResult(`🔄 强制刷新完成! 当前任务数: ${tasks.length}`)
+    } catch (error) {
+      setTestResult(`❌ 刷新失败: ${error instanceof Error ? error.message : '未知错误'}`)
     } finally {
       setIsLoading(false)
     }
@@ -188,6 +207,15 @@ ${!isUrlValid || !isKeyValid ? '\n⚠️  请检查Vercel环境变量配置！' 
           className="bg-green-500 hover:bg-green-600"
         >
           {isLoading ? '测试中...' : '测试Store操作'}
+        </Button>
+        
+        <Button 
+          onClick={forceRefresh} 
+          disabled={isLoading}
+          size="sm"
+          className="bg-orange-500 hover:bg-orange-600"
+        >
+          {isLoading ? '刷新中...' : '强制刷新'}
         </Button>
       </div>
       

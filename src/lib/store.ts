@@ -122,9 +122,13 @@ export const useStore = create<AppState>((set, get) => ({
   addTask: async (taskData) => {
     try {
       const newTask = await createTask(taskData)
-      set((state) => ({ tasks: [...state.tasks, newTask] }))
+      set((state) => ({ 
+        tasks: [...state.tasks, newTask],
+        isLoading: false 
+      }))
     } catch (error) {
       console.error('Failed to add task:', error)
+      set({ isLoading: false })
       throw error
     }
   },
