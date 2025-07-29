@@ -30,16 +30,11 @@ export function DashboardHeader() {
   const completedHoursToday = completedToday.reduce((sum, task) => sum + (task.actualHours || task.estimatedHours), 0)
   
   return (
-    <div className="text-center mb-8">
-      {/* 主标题区域 */}
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent mb-2">
-          {format(getBeijingTime(), 'M月d日', { locale: zhCN })}
-        </h1>
-        <h2 className="text-base md:text-lg font-medium text-gray-600 mb-2">
-          {format(getBeijingTime(), 'EEEE', { locale: zhCN })}
-        </h2>
-        <p className="text-gray-500 text-sm">
+    <div className="text-center mb-6">
+      {/* 简洁的一行标题 */}
+      <div className="mb-4">
+        <p className="text-sm text-gray-600">
+          {format(getBeijingTime(), 'M月d日 EEEE', { locale: zhCN })} · 
           今日任务 {todayTasks.length} 个，已完成 {completedToday.length} 个，剩余 {pendingToday.length} 个
         </p>
       </div>
