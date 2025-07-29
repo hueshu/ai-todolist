@@ -35,10 +35,18 @@ export function DatabaseTest() {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     
-    setTestResult(`
-URL: ${url ? '✅ 已配置' : '❌ 未配置'}
-KEY: ${key ? '✅ 已配置' : '❌ 未配置'}
-    `)
+    const isUrlValid = url && url !== 'https://placeholder.supabase.co'
+    const isKeyValid = key && key !== 'placeholder-key'
+    
+    setTestResult(`环境变量检查:
+    
+SUPABASE_URL: ${url ? (isUrlValid ? '✅ 已正确配置' : '❌ 使用占位符值') : '❌ 未配置'}
+实际值: ${url || '未设置'}
+
+SUPABASE_KEY: ${key ? (isKeyValid ? '✅ 已正确配置' : '❌ 使用占位符值') : '❌ 未配置'}
+实际值: ${key ? key.substring(0, 20) + '...' : '未设置'}
+
+${!isUrlValid || !isKeyValid ? '\n⚠️  请检查Vercel环境变量配置！' : ''}`)
   }
 
   return (
