@@ -9,6 +9,7 @@ import { CalendarView } from '@/components/CalendarView'
 import { AIAssistant } from '@/components/AIAssistant'
 import { FixedEventManager } from '@/components/FixedEventManager'
 import { TestFixedEvents } from '@/components/TestFixedEvents'
+import { DatabaseTest } from '@/components/DatabaseTest'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Brain, Calendar, FolderOpen, Home as HomeIcon, BarChart3, ListTodo, Clock } from 'lucide-react'
 
@@ -51,8 +52,11 @@ export default function Home() {
           </TabsList>
           
           <TabsContent value="dashboard" className="mt-6">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <TodayTaskList />
+            <div className="space-y-6">
+              <DatabaseTest />
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <TodayTaskList />
+              </div>
             </div>
           </TabsContent>
           
