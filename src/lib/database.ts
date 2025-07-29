@@ -3,6 +3,11 @@ import { Task, Project, FixedEvent } from '@/types'
 
 // 获取当前用户ID (简化版，后续可以换成真正的认证)
 function getCurrentUserId(): string {
+  // 只在客户端运行
+  if (typeof window === 'undefined') {
+    return 'server-user-id' // 服务器端返回默认ID
+  }
+  
   // 临时方案：使用设备标识作为用户ID
   let userId = localStorage.getItem('device-user-id')
   if (!userId) {

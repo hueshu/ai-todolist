@@ -255,7 +255,10 @@ export const useStore = create<AppState>((set, get) => ({
   })),
 }))
 
-// 在应用启动时加载数据
+// 在应用启动时加载数据（只在客户端）
 if (typeof window !== 'undefined') {
-  useStore.getState().loadAll()
+  // 延迟执行，确保组件挂载后再加载数据
+  setTimeout(() => {
+    useStore.getState().loadAll().catch(console.error)
+  }, 100)
 }
