@@ -70,7 +70,11 @@ export function TaskDetailModal({ task, onClose, onSave }: TaskDetailModalProps)
     }
   }
   
-  const availableTasks = tasks.filter(t => t.id !== task.id && t.status !== 'completed')
+  const availableTasks = tasks.filter(t => 
+    t.id !== task.id && 
+    t.status !== 'completed' && 
+    t.projectId === editedTask.projectId
+  )
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -109,7 +113,11 @@ export function TaskDetailModal({ task, onClose, onSave }: TaskDetailModalProps)
               </label>
               <ProjectSelect
                 value={editedTask.projectId}
-                onChange={(value) => setEditedTask({ ...editedTask, projectId: value })}
+                onChange={(value) => {
+                  setEditedTask({ ...editedTask, projectId: value })
+                  // 清空依赖任务，因为项目改变了
+                  setSelectedDependencies([])
+                }}
                 projects={projects}
                 industries={industries}
                 className="mt-1"
@@ -255,8 +263,10 @@ export function TaskDetailModal({ task, onClose, onSave }: TaskDetailModalProps)
               依赖任务
             </label>
             <div className="mt-1 max-h-[150px] overflow-y-auto border rounded-md p-2">
-              {availableTasks.length === 0 ? (
-                <p className="text-sm text-muted-foreground">无可用任务</p>
+              {!editedTask.projectId ? (
+                <p className="text-sm text-muted-foreground">请先选择项目</p>
+              ) : availableTasks.length === 0 ? (
+                <p className="text-sm text-muted-foreground">当前项目暂无其他可用任务</p>
               ) : (
                 availableTasks.map(t => (
                   <label key={t.id} className="flex items-center gap-2 p-1 hover:bg-gray-50 cursor-pointer">
