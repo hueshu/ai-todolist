@@ -91,15 +91,15 @@ export function TaskInput() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* 主输入区域 */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-blue-100">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="输入任务内容，支持自然语言..."
-            className="flex-1 h-12 text-base rounded-xl border-blue-200 focus:border-blue-400 focus:ring-blue-200"
+            className="flex-1 h-11 sm:h-12 text-sm sm:text-base rounded-xl border-blue-200 focus:border-blue-400 focus:ring-blue-200"
           />
           <div className="flex gap-2">
             <Button 
@@ -107,14 +107,14 @@ export function TaskInput() {
               variant="outline"
               onClick={handleAIAnalysis}
               disabled={isAnalyzing}
-              className="h-12 px-6 rounded-xl border-blue-200 hover:bg-blue-50 transition-all"
+              className="flex-1 sm:flex-none h-11 sm:h-12 px-4 sm:px-6 rounded-xl border-blue-200 hover:bg-blue-50 transition-all text-sm"
             >
-              <Brain className="w-4 h-4 mr-2" />
+              <Brain className="w-4 h-4 mr-1 sm:mr-2" />
               {isAnalyzing ? '分析中...' : 'AI分析'}
             </Button>
             <Button 
               type="submit" 
-              className="h-12 px-6 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg"
+              className="flex-1 sm:flex-none h-11 sm:h-12 px-4 sm:px-6 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg text-sm"
             >
               添加任务
             </Button>
@@ -123,8 +123,8 @@ export function TaskInput() {
       </div>
       
       {/* 详细设置区域 */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 shadow-sm space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-sm space-y-4 sm:space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <div>
             <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-3">
               <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
@@ -210,7 +210,7 @@ export function TaskInput() {
             </div>
             快捷设置时长
           </label>
-          <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
             {[
               { label: '10分钟', value: 0.17 },
               { label: '20分钟', value: 0.33 },
