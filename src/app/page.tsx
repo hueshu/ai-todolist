@@ -10,10 +10,14 @@ import { AIAssistant } from '@/components/AIAssistant'
 import { FixedEventManager } from '@/components/FixedEventManager'
 import { TestFixedEvents } from '@/components/TestFixedEvents'
 import { DatabaseTest } from '@/components/DatabaseTest'
+import { useDataLoader } from '@/hooks/useDataLoader'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Brain, Calendar, FolderOpen, Home as HomeIcon, BarChart3, ListTodo, Clock } from 'lucide-react'
 
 export default function Home() {
+  // 确保数据加载
+  const { hasData, isLoading } = useDataLoader()
+  
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="container mx-auto p-6 max-w-6xl">

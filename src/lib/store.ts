@@ -261,8 +261,21 @@ export const useStore = create<AppState>((set, get) => ({
 
 // 在应用启动时加载数据（只在客户端）
 if (typeof window !== 'undefined') {
-  // 延迟执行，确保组件挂载后再加载数据
-  setTimeout(() => {
-    useStore.getState().loadAll().catch(console.error)
-  }, 100)
+  // 使用更可靠的初始化方式
+  const initializeData = () => {
+    const store = useStore.getState()
+    if (store.tasks.length === 0) {
+      store.loadAll().catch(console.error)
+    }
+  }
+  
+  // 多种方式确保数据加载
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeData)
+  } else {
+    initializeData()
+  }
+  
+  // 备用方案：延迟加载
+  setTimeout(initializeData, 500)
 }
