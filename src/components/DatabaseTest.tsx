@@ -132,12 +132,12 @@ ${!isUrlValid || !isKeyValid ? '\n⚠️  请检查Vercel环境变量配置！' 
       
       // 测试通过store添加任务
       const newTaskData = {
-        title: 'Store测试任务',
+        title: 'Store测试任务（每周）',
         priority: 'medium' as const,
         estimatedHours: 1,
         status: 'pool' as const,
         tags: [],
-        taskType: 'single' as const,
+        taskType: 'weekly' as const,
       }
       
       await addTask(newTaskData)
