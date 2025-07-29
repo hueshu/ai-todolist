@@ -218,57 +218,50 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
     
     // 创建停止工作时间的Date对象
     const [endHour, endMin] = workEndTime.split(':').map(Number)
-    const workEndDate = new Date(startTime)
+    const workEndDate = new Date()
     workEndDate.setHours(endHour, endMin, 0, 0)
     
-    // 校正时间安排 - 简化版本，直接重建时间，确保不超过停止工作时间
-    const correctedSchedule = (result.schedule || []).filter((item: any, index: number) => {
-      // 计算每个任务应该开始的时间
-      let taskStartTime = new Date(startTime)
-      
-      // 为前面的任务累加时间
-      for (let i = 0; i < index; i++) {
-        const prevItem = result.schedule[i]
-        const duration = calculateDuration(prevItem.timeSlot, prevItem.type)
-        taskStartTime = new Date(taskStartTime.getTime() + duration * 60000)
-      }
-      
-      // 检查任务开始时间是否超过停止工作时间
-      return taskStartTime < workEndDate
-    }).map((item: any, index: number) => {
-      // 计算每个任务应该开始的时间
-      let taskStartTime = new Date(startTime)
-      
-      // 为前面的任务累加时间
-      for (let i = 0; i < index; i++) {
-        const prevItem = result.schedule[i]
-        const duration = calculateDuration(prevItem.timeSlot, prevItem.type)
-        taskStartTime = new Date(taskStartTime.getTime() + duration * 60000)
-      }
-      
-      // 计算当前任务的结束时间
+    // 创建基于北京时间的开始时间
+    const [startHour, startMin] = actualStartTime.split(':').map(Number)
+    const beijingStartTime = new Date()
+    beijingStartTime.setHours(startHour, startMin, 0, 0)
+    
+    // 校正时间安排 - 基于字符串处理，确保正确
+    let currentTimeInMinutes = timeToMinutes(actualStartTime)
+    const endTimeInMinutes = timeToMinutes(workEndTime)
+    
+    console.log('[时间校正] 开始时间:', actualStartTime, '(', currentTimeInMinutes, '分钟)')
+    console.log('[时间校正] 结束时间:', workEndTime, '(', endTimeInMinutes, '分钟)')
+    
+    const correctedSchedule = (result.schedule || []).map((item: any, index: number) => {
+      // 计算任务时长
       const duration = calculateDuration(item.timeSlot, item.type)
-      let taskEndTime = new Date(taskStartTime.getTime() + duration * 60000)
       
-      // 如果任务结束时间超过停止工作时间，则调整为停止工作时间
-      if (taskEndTime > workEndDate) {
-        taskEndTime = new Date(workEndDate)
+      // 如果当前时间加上任务时长超过结束时间，则跳过
+      if (currentTimeInMinutes + duration > endTimeInMinutes) {
+        console.log('[时间校正] 任务超出工作时间，跳过:', item.taskId)
+        return null
       }
       
-      // 格式化时间
-      const startHour = taskStartTime.getHours().toString().padStart(2, '0')
-      const startMin = taskStartTime.getMinutes().toString().padStart(2, '0')
-      const endHour = taskEndTime.getHours().toString().padStart(2, '0')
-      const endMin = taskEndTime.getMinutes().toString().padStart(2, '0')
+      // 计算任务的开始和结束时间
+      const startHour = Math.floor(currentTimeInMinutes / 60)
+      const startMin = currentTimeInMinutes % 60
+      const endTimeInMinutes = currentTimeInMinutes + duration
+      const endHour = Math.floor(endTimeInMinutes / 60)
+      const endMin = endTimeInMinutes % 60
       
-      const correctedTimeSlot = `${startHour}:${startMin}-${endHour}:${endMin}`
+      const correctedTimeSlot = `${startHour.toString().padStart(2, '0')}:${startMin.toString().padStart(2, '0')}-${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`
       
+      console.log('[时间校正] 任务', index + 1, ':', item.taskId, '原时间:', item.timeSlot, '校正后:', correctedTimeSlot)
+      
+      // 更新当前时间为任务结束时间
+      currentTimeInMinutes = endTimeInMinutes
       
       return {
         ...item,
         timeSlot: correctedTimeSlot
       }
-    })
+    }).filter(item => item !== null)
     
     // 处理返回的数据，确保taskId正确映射到任务
     const scheduleItems = correctedSchedule.map((item: any) => {
