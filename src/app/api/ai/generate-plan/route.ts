@@ -3,9 +3,11 @@ import OpenAI from 'openai'
 import { DailyPlanRequest, DailyPlanResponse, Task } from '@/types'
 import { format } from 'date-fns'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+function getOpenAI() {
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  })
+}
 
 function getWorkingHours(workStyle: string) {
   switch (workStyle) {
@@ -126,6 +128,7 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
 
     console.log('Sending to OpenAI with prompt length:', prompt.length)
     
+    const openai = getOpenAI()
     const completion = await openai.chat.completions.create({
       messages: [{ role: "system", content: prompt }],
       model: "gpt-4o-mini",

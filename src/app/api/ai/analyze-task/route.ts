@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { TaskAnalysisRequest, TaskAnalysisResponse } from '@/types'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+function getOpenAI() {
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  })
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,6 +35,7 @@ ${body.context?.currentProjects?.map(p => {
 
 以JSON格式返回结果。`
 
+    const openai = getOpenAI()
     const completion = await openai.chat.completions.create({
       messages: [{ role: "system", content: prompt }],
       model: "gpt-4o-mini",
