@@ -294,3 +294,19 @@ export const fixedEventService = {
     if (error) throw error
   }
 }
+
+// 单独导出函数供store使用
+export const getTasks = taskService.getAll
+export const createTask = taskService.create
+export const updateTask = taskService.update
+export const deleteTask = taskService.delete
+
+export const getProjects = projectService.getAll
+export const createProject = projectService.create
+export const updateProject = projectService.update
+export const deleteProject = projectService.delete
+
+export const getFixedEvents = fixedEventService.getAll
+export const createFixedEvent = fixedEventService.create
+export const updateFixedEvent = fixedEventService.update
+export const deleteFixedEvent = fixedEventService.delete
