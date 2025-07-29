@@ -29,6 +29,8 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [completingTask, setCompletingTask] = useState<Task | null>(null)
   const [showBatchActions, setShowBatchActions] = useState(false)
+  const [sortBy, setSortBy] = useState<'priority' | 'deadline' | 'created'>('priority')
+  const [filterPriority, setFilterPriority] = useState<string>('all')
   
   const tasks = useStore((state) => state.tasks)
   const projects = useStore((state) => state.projects)
@@ -52,13 +54,25 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
     }
   }
 
-  const filteredTasks = tasks.filter(task => {
-    if (filter === 'all') return true
-    if (filter === 'pool') return task.status === 'pool'
-    if (filter === 'scheduled') return task.status === 'scheduled'
-    if (filter === 'completed') return task.status === 'completed'
-    return true
-  })
+  const filteredTasks = tasks
+    .filter(task => {
+      if (filter !== 'all' && task.status !== filter) return false
+      if (filterPriority !== 'all' && task.priority !== filterPriority) return false
+      return true
+    })
+    .sort((a, b) => {
+      if (sortBy === 'priority') {
+        const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 }
+        return priorityOrder[a.priority] - priorityOrder[b.priority]
+      }
+      if (sortBy === 'deadline') {
+        if (!a.deadline) return 1
+        if (!b.deadline) return -1
+        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+      }
+      // sortBy === 'created'
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
 
   const toggleTaskStatus = (taskId: string) => {
     const task = tasks.find(t => t.id === taskId)
@@ -120,6 +134,53 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
 
   return (
     <div className="space-y-2 sm:space-y-4">
+      {/* 过滤和排序控件 */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 p-3 bg-gray-50 rounded-lg">
+        <div className="flex items-center gap-2 flex-1">
+          <label className="text-sm font-medium text-gray-700">排序：</label>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            className="px-3 py-1.5 text-sm border rounded-md bg-white"
+          >
+            <option value="priority">按优先级</option>
+            <option value="deadline">按截止日期</option>
+            <option value="created">按创建时间</option>
+          </select>
+        </div>
+        
+        <div className="flex items-center gap-2 flex-1">
+          <label className="text-sm font-medium text-gray-700">筛选：</label>
+          <select
+            value={filterPriority}
+            onChange={(e) => setFilterPriority(e.target.value)}
+            className="px-3 py-1.5 text-sm border rounded-md bg-white"
+          >
+            <option value="all">所有优先级</option>
+            <option value="urgent">紧急</option>
+            <option value="high">高</option>
+            <option value="medium">中</option>
+            <option value="low">低</option>
+          </select>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">
+            共 {filteredTasks.length} 个任务
+          </span>
+          {selectedTasks.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowBatchActions(!showBatchActions)}
+              className="text-xs"
+            >
+              批量操作
+            </Button>
+          )}
+        </div>
+      </div>
+      
       {showBatchActions && selectedTasks.length > 0 && (
         <div className="p-2 sm:p-3 bg-blue-50 rounded-lg">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
@@ -171,116 +232,146 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
           
           return (
             <Card key={task.id} className={cn(
-              "hover:shadow-md transition-shadow",
-              selectedTasks.includes(task.id) && "ring-2 ring-blue-500"
+              "hover:shadow-md transition-all duration-200 border-l-4",
+              selectedTasks.includes(task.id) && "ring-2 ring-blue-500",
+              task.priority === 'urgent' && "border-l-red-500",
+              task.priority === 'high' && "border-l-orange-500",
+              task.priority === 'medium' && "border-l-yellow-500",
+              task.priority === 'low' && "border-l-green-500"
             )}>
               <CardContent className="p-3 sm:p-4">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                  <div className="flex items-center gap-3 flex-1">
-                    <input
-                      type="checkbox"
-                      checked={selectedTasks.includes(task.id)}
-                      onChange={() => toggleTaskSelection(task.id)}
-                      className="w-4 h-4"
-                    />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => toggleTaskStatus(task.id)}
-                      className="shrink-0 w-8 h-8 sm:w-10 sm:h-10"
-                    >
-                      {task.status === 'completed' ? (
-                        <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-                      ) : (
-                        <Circle className="w-4 h-4 sm:w-5 sm:h-5" />
-                      )}
-                    </Button>
+                <div className="flex flex-col gap-3">
+                  {/* 标题行 */}
+                  <div className="flex items-start gap-3">
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedTasks.includes(task.id)}
+                        onChange={() => toggleTaskSelection(task.id)}
+                        className="w-4 h-4 rounded border-gray-300"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => toggleTaskStatus(task.id)}
+                        className="shrink-0 w-8 h-8"
+                      >
+                        {task.status === 'completed' ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-500" />
+                        ) : (
+                          <Circle className="w-5 h-5 text-gray-400 hover:text-gray-600" />
+                        )}
+                      </Button>
+                    </div>
                     
                     <div className="flex-1 min-w-0">
-                      <h3 className={cn(
-                        "font-medium text-sm sm:text-base truncate",
-                        task.status === 'completed' && "line-through text-muted-foreground"
-                      )}>
-                        {task.title}
-                      </h3>
-                      {task.description && (
-                        <p className="text-xs sm:text-sm text-muted-foreground truncate">{task.description}</p>
-                      )}
-                      <div className="flex items-center gap-1 sm:gap-2 mt-1 flex-wrap text-xs sm:text-sm">
-                        <span className={cn("flex items-center gap-1", priorityColors[task.priority])}>
-                          {priorityIcons[task.priority]}
-                          <span className="hidden sm:inline">{task.priority}</span>
-                        </span>
-                        <span className="text-muted-foreground">
-                          {task.estimatedHours}h
-                        </span>
-                        <span className="px-1 sm:px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs">
-                          {task.taskType === 'daily' ? '🔁' : 
-                           task.taskType === 'weekly' ? '📆' :
-                           task.taskType === 'monthly' ? '🗓️' : '📅'}
-                          <span className="hidden sm:inline ml-1">
-                            {task.taskType === 'daily' ? '每日' : 
-                             task.taskType === 'weekly' ? '每周' :
-                             task.taskType === 'monthly' ? '每月' : '单次'}
-                          </span>
-                        </span>
-                        {project && (
-                          <span className="flex items-center gap-1 text-blue-600">
-                            <FolderOpen className="w-3 h-3" />
-                            <span className="truncate max-w-20">{project.name}</span>
-                          </span>
-                        )}
-                        {task.tags.length > 0 && (
-                          <div className="flex items-center gap-1">
-                            <Tag className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-xs bg-gray-100 px-1 py-0.5 rounded truncate max-w-16">
-                              {task.tags[0]}{task.tags.length > 1 && '+'}
-                            </span>
-                          </div>
-                        )}
-                        {task.deadline && (
-                          <span className="flex items-center gap-1 text-muted-foreground">
-                            <Calendar className="w-3 h-3" />
-                            <span className="hidden sm:inline">
-                              {new Date(task.deadline).toLocaleDateString('zh-CN')}
-                            </span>
-                          </span>
-                        )}
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h3 className={cn(
+                            "font-semibold text-base sm:text-lg leading-tight",
+                            task.status === 'completed' && "line-through text-muted-foreground"
+                          )}>
+                            {task.title}
+                          </h3>
+                          {task.description && (
+                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{task.description}</p>
+                          )}
+                        </div>
+                        
+                        {/* 操作按钮 */}
+                        <div className="flex gap-1 shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setEditingTask(task)}
+                            className="w-8 h-8"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              if (window.confirm(`确定要删除任务"${task.title}"吗？`)) {
+                                handleDeleteTask(task.id)
+                              }
+                            }}
+                            className="text-destructive hover:text-destructive w-8 h-8"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex gap-1 sm:gap-2 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setEditingTask(task)}
-                      className="w-8 h-8 sm:w-10 sm:h-10"
-                    >
-                      <Edit2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                    </Button>
+                  {/* 元信息行 */}
+                  <div className="flex items-center justify-between flex-wrap gap-2 pl-14">
+                    <div className="flex items-center gap-3 flex-wrap text-sm">
+                      {/* 优先级和时长 */}
+                      <div className="flex items-center gap-2">
+                        <span className={cn(
+                          "flex items-center gap-1 font-medium",
+                          priorityColors[task.priority]
+                        )}>
+                          {priorityIcons[task.priority]}
+                          {task.priority === 'urgent' ? '紧急' :
+                           task.priority === 'high' ? '高' :
+                           task.priority === 'medium' ? '中' : '低'}
+                        </span>
+                        <span className="text-muted-foreground">•</span>
+                        <span className="flex items-center gap-1 text-muted-foreground">
+                          <Clock className="w-3.5 h-3.5" />
+                          {task.estimatedHours}小时
+                        </span>
+                      </div>
+                      
+                      {/* 任务类型 */}
+                      <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
+                        {task.taskType === 'daily' ? '每日' : 
+                         task.taskType === 'weekly' ? '每周' :
+                         task.taskType === 'monthly' ? '每月' : '单次'}
+                      </span>
+                      
+                      {/* 项目 */}
+                      {project && (
+                        <span className="flex items-center gap-1.5 text-blue-600 font-medium">
+                          <FolderOpen className="w-3.5 h-3.5" />
+                          {project.name}
+                        </span>
+                      )}
+                      
+                      {/* 标签 */}
+                      {task.tags.length > 0 && (
+                        <div className="flex items-center gap-1">
+                          {task.tags.map((tag, index) => (
+                            <span key={index} className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* 截止日期 */}
+                      {task.deadline && (
+                        <span className="flex items-center gap-1 text-muted-foreground">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {new Date(task.deadline).toLocaleDateString('zh-CN')}
+                        </span>
+                      )}
+                    </div>
+                    
+                    {/* 操作按钮 */}
                     {task.status === 'pool' && (
                       <Button
-                        variant="outline"
+                        variant="default"
                         size="sm"
                         onClick={() => handleUpdateTask(task.id, { status: 'scheduled' })}
-                        className="text-xs px-2 py-1 sm:px-3 sm:py-2"
+                        className="text-xs"
                       >
-                        安排
+                        安排任务
                       </Button>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        if (window.confirm(`确定要删除任务"${task.title}"吗？此操作无法撤销。`)) {
-                          handleDeleteTask(task.id)
-                        }
-                      }}
-                      className="text-destructive hover:text-destructive w-8 h-8 sm:w-10 sm:h-10"
-                    >
-                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                    </Button>
                   </div>
                 </div>
               </CardContent>
