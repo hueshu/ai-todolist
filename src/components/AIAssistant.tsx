@@ -147,8 +147,8 @@ export function AIAssistant() {
   }
   
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="hidden sm:block">
         <h2 className="text-xl font-semibold mb-4">AI 智能助手</h2>
         <p className="text-muted-foreground mb-6">
           让 AI 帮你分析任务、生成最优工作计划
@@ -156,39 +156,39 @@ export function AIAssistant() {
       </div>
       
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
             智能日程规划
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground">待安排任务</p>
-                <p className="text-2xl font-bold">{tasks.filter(t => t.status === 'pool').length}</p>
+        <CardContent className="pt-0">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm">
+              <div className="text-center">
+                <p className="text-muted-foreground mb-1">待安排任务</p>
+                <p className="text-lg sm:text-2xl font-bold">{tasks.filter(t => t.status === 'pool').length}</p>
               </div>
-              <div>
-                <p className="text-muted-foreground">可用时间</p>
-                <div className="flex items-center gap-2">
+              <div className="text-center">
+                <p className="text-muted-foreground mb-1">可用时间</p>
+                <div className="flex items-center justify-center gap-1">
                   <Input
                     type="number"
                     value={availableHours}
                     onChange={(e) => setAvailableHours(Number(e.target.value))}
-                    className="w-16 h-8"
+                    className="w-12 sm:w-16 h-6 sm:h-8 text-xs sm:text-sm text-center"
                     min="1"
                     max="12"
                   />
-                  <span className="text-sm">小时</span>
+                  <span className="text-xs sm:text-sm">h</span>
                 </div>
               </div>
-              <div>
-                <p className="text-muted-foreground">工作风格</p>
+              <div className="text-center">
+                <p className="text-muted-foreground mb-1">工作风格</p>
                 <select
                   value={preferences.workStyle}
                   onChange={(e) => updatePreferences({ workStyle: e.target.value as any })}
-                  className="text-sm border rounded px-2 py-1"
+                  className="text-xs sm:text-sm border rounded px-1 sm:px-2 py-1 w-full"
                 >
                   <option value="morning-person">早起型</option>
                   <option value="night-owl">夜猫子</option>
@@ -197,34 +197,34 @@ export function AIAssistant() {
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground">深度工作块</p>
-                <div className="flex items-center gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
+              <div className="text-center">
+                <p className="text-muted-foreground mb-1">深度工作块</p>
+                <div className="flex items-center justify-center gap-1">
                   <Input
                     type="number"
                     value={preferences.focusBlocks}
                     onChange={(e) => updatePreferences({ focusBlocks: Number(e.target.value) })}
-                    className="w-16 h-8"
+                    className="w-12 sm:w-16 h-6 sm:h-8 text-xs sm:text-sm text-center"
                     min="1"
                     max="5"
                   />
-                  <span className="text-sm">个</span>
+                  <span className="text-xs sm:text-sm">个</span>
                 </div>
               </div>
-              <div>
-                <p className="text-muted-foreground">休息频率</p>
-                <div className="flex items-center gap-2">
+              <div className="text-center">
+                <p className="text-muted-foreground mb-1">休息频率</p>
+                <div className="flex items-center justify-center gap-1">
                   <Input
                     type="number"
                     value={preferences.breakFrequency}
                     onChange={(e) => updatePreferences({ breakFrequency: Number(e.target.value) })}
-                    className="w-16 h-8"
+                    className="w-12 sm:w-16 h-6 sm:h-8 text-xs sm:text-sm text-center"
                     min="30"
                     max="120"
                     step="15"
                   />
-                  <span className="text-sm">分钟</span>
+                  <span className="text-xs sm:text-sm">分</span>
                 </div>
               </div>
             </div>
@@ -232,7 +232,7 @@ export function AIAssistant() {
             <Button 
               onClick={handleGeneratePlan}
               disabled={isGeneratingPlan || tasks.filter(t => t.status === 'pool').length === 0}
-              className="w-full"
+              className="w-full h-10 sm:h-12 text-sm sm:text-base"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               {isGeneratingPlan ? '生成中...' : '生成今日计划'}
@@ -243,63 +243,63 @@ export function AIAssistant() {
       
       {dailyPlan && (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+          <CardHeader className="pb-3 sm:pb-6">
+            <CardTitle className="flex items-center justify-between text-base sm:text-lg">
               <span>今日建议计划</span>
-              <Button variant="ghost" size="sm" onClick={() => setDailyPlan(null)}>
+              <Button variant="ghost" size="sm" onClick={() => setDailyPlan(null)} className="w-8 h-8">
                 ✕
               </Button>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="pt-0">
+            <div className="space-y-2 sm:space-y-3">
               {dailyPlan.schedule.map((item, index) => {
                 const typeIcons = {
-                  focus: <Target className="w-4 h-4" />,
-                  regular: <Clock className="w-4 h-4" />,
-                  break: <Coffee className="w-4 h-4" />
+                  focus: <Target className="w-3 h-3 sm:w-4 sm:h-4" />,
+                  regular: <Clock className="w-3 h-3 sm:w-4 sm:h-4" />,
+                  break: <Coffee className="w-3 h-3 sm:w-4 sm:h-4" />
                 }
                 
                 return (
                   <div key={index} className={cn(
-                    "flex items-start gap-3 p-3 rounded-lg border",
+                    "flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border",
                     item.type === 'break' ? "bg-green-50 border-green-200" : "bg-gray-50"
                   )}>
                     <div className={cn(
-                      "p-2 rounded-full",
+                      "p-1.5 sm:p-2 rounded-full shrink-0",
                       item.type === 'focus' && "bg-purple-100 text-purple-700",
                       item.type === 'regular' && "bg-blue-100 text-blue-700",
                       item.type === 'break' && "bg-green-100 text-green-700"
                     )}>
                       {typeIcons[item.type]}
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium text-sm">{item.timeSlot}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-medium text-xs sm:text-sm">{item.timeSlot}</p>
                         <span className={cn(
-                          "text-xs px-2 py-1 rounded",
+                          "text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded shrink-0",
                           item.type === 'focus' && "bg-purple-100 text-purple-700",
                           item.type === 'regular' && "bg-blue-100 text-blue-700",
                           item.type === 'break' && "bg-green-100 text-green-700"
                         )}>
-                          {item.type === 'focus' ? '深度工作' : 
-                           item.type === 'regular' ? '常规任务' : '休息'}
+                          {item.type === 'focus' ? '深度' : 
+                           item.type === 'regular' ? '常规' : '休息'}
                         </span>
                       </div>
-                      <p className="text-sm mt-1">{item.task.title}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{item.reason}</p>
+                      <p className="text-xs sm:text-sm mt-1 truncate">{item.task.title}</p>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.reason}</p>
                     </div>
                   </div>
                 )
               })}
               
               {dailyPlan.suggestions.length > 0 && (
-                <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-600" />
+                <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-xs sm:text-sm font-medium mb-2 flex items-center gap-2">
+                    <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600" />
                     AI 建议
                   </p>
-                  <ul className="text-sm space-y-1 text-gray-700">
+                  <ul className="text-xs sm:text-sm space-y-1 text-gray-700">
                     {dailyPlan.suggestions.map((suggestion, index) => (
                       <li key={index}>• {suggestion}</li>
                     ))}
@@ -307,27 +307,28 @@ export function AIAssistant() {
                 </div>
               )}
               
-              
-              <div className="flex justify-between items-center mt-4 pt-4 border-t">
-                <div>
-                  <p className="text-sm text-muted-foreground">预计生产力指数</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="w-32 bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-2 rounded-full"
-                        style={{ width: `${dailyPlan.estimatedProductivity}%` }}
-                      />
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                  <div className="flex-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-1">预计生产力指数</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 sm:w-32 bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-2 rounded-full"
+                          style={{ width: `${dailyPlan.estimatedProductivity}%` }}
+                        />
+                      </div>
+                      <span className="text-xs sm:text-sm font-bold shrink-0">{dailyPlan.estimatedProductivity}%</span>
                     </div>
-                    <span className="text-sm font-bold">{dailyPlan.estimatedProductivity}%</span>
                   </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setDailyPlan(null)}>
-                    重新生成
-                  </Button>
-                  <Button onClick={applyPlan}>
-                    应用计划
-                  </Button>
+                  <div className="flex gap-2 sm:gap-2">
+                    <Button variant="outline" onClick={() => setDailyPlan(null)} size="sm" className="flex-1 sm:flex-none text-xs px-3">
+                      重新生成
+                    </Button>
+                    <Button onClick={applyPlan} size="sm" className="flex-1 sm:flex-none text-xs px-3">
+                      应用计划
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -336,13 +337,13 @@ export function AIAssistant() {
       )}
       
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ListTodo className="w-5 h-5" />
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <ListTodo className="w-4 h-4 sm:w-5 sm:h-5" />
             自然语言添加任务
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <form onSubmit={(e) => {
             e.preventDefault()
             // 处理自然语言输入
@@ -350,11 +351,11 @@ export function AIAssistant() {
             <Input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="例如：明天下午3点开会讨论新项目..."
-              className="flex-1"
+              placeholder="例如：明天下午3点开会..."
+              className="flex-1 text-sm h-10 sm:h-12"
             />
-            <Button type="submit">
-              <Send className="w-4 h-4" />
+            <Button type="submit" size="sm" className="w-10 h-10 sm:w-12 sm:h-12 shrink-0">
+              <Send className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
           </form>
         </CardContent>

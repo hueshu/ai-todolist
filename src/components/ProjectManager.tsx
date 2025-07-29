@@ -138,15 +138,17 @@ export function ProjectManager() {
   // 如果正在查看归档，显示归档项目管理界面
   if (viewingArchive) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
+      <div className="space-y-3 px-2 sm:px-0">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
           <Button
             variant="outline"
             onClick={() => setViewingArchive(false)}
+            size="sm"
+            className="self-start"
           >
             ← 返回活跃项目
           </Button>
-          <h2 className="text-xl font-semibold">归档项目管理</h2>
+          <h2 className="text-lg sm:text-xl font-semibold">归档项目管理</h2>
         </div>
         
         {archivedProjects.length === 0 ? (
@@ -155,7 +157,7 @@ export function ProjectManager() {
             <p className="text-muted-foreground">暂无归档项目</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {archivedProjects.map((project) => {
               const priority = project.priority || 'small-potential'
               const duration = project.duration || 30
@@ -163,69 +165,80 @@ export function ProjectManager() {
               
               return (
                 <Card key={project.id} className="hover:shadow-md transition-shadow bg-gray-50">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Archive className="w-4 h-4 text-muted-foreground" />
-                          {project.name || '未命名项目'}
+                  <CardHeader className="pb-3">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-base sm:text-lg flex items-center gap-2 leading-tight">
+                          <Archive className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                          <span className="truncate">{project.name || '未命名项目'}</span>
                         </CardTitle>
-                        <CardDescription className="mt-1">{project.description || ''}</CardDescription>
+                        {project.description && (
+                          <CardDescription className="mt-1 text-sm line-clamp-2">{project.description}</CardDescription>
+                        )}
                       </div>
-                      <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded ${priorityColors[priority]}`}>
+                      <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded whitespace-nowrap ${priorityColors[priority]}`}>
                         {priorityIcons[priority]}
-                        <span>{priorityLabels[priority]}</span>
+                        <span className="hidden xs:inline">{priorityLabels[priority]}</span>
+                        <span className="xs:hidden">
+                          {priority === 'small-earning' ? '小赚钱' :
+                           priority === 'small-potential' ? '可赚钱' :
+                           priority === 'small-hobby' ? '爱好' :
+                           priority === 'earning' ? '赚钱' : '努力中'}
+                        </span>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="px-4 pb-4">
                     <div className="space-y-2 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
-                        <CalendarDays className="w-4 h-4" />
-                        <span>项目周期：{duration} 天</span>
+                        <CalendarDays className="w-3 h-3 flex-shrink-0" />
+                        <span>周期 {duration} 天</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs">
-                          创建于 {format(createdAt, 'yyyy年MM月dd日', { locale: zhCN })}，
-                          预计 {format(addDays(createdAt, duration), 'MM月dd日', { locale: zhCN })} 完成
-                        </span>
+                      <div className="text-xs">
+                        创建于 {format(createdAt, 'MM月dd日', { locale: zhCN })}，
+                        预计 {format(addDays(createdAt, duration), 'MM月dd日', { locale: zhCN })} 完成
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Target className="w-4 h-4" />
-                        <span>周目标：{(project.weeklyGoals || []).length} 个</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Flag className="w-4 h-4" />
-                        <span>里程碑：{(project.milestones || []).length} 个</span>
+                      <div className="flex justify-between text-xs">
+                        <div className="flex items-center gap-1">
+                          <Target className="w-3 h-3" />
+                          <span>周目标 {(project.weeklyGoals || []).length}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Flag className="w-3 h-3" />
+                          <span>里程碑 {(project.milestones || []).length}</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex gap-2 mt-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => updateProject(project.id, { status: 'active' })}
-                        className="text-green-600 hover:text-green-600"
-                      >
-                        <Archive className="w-4 h-4 mr-1 rotate-180" />
-                        恢复活跃
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setViewingMilestones(project)}
-                      >
-                        <Flag className="w-4 h-4 mr-1" />
-                        查看里程碑
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteProject(project.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        删除
-                      </Button>
+                    <div className="mt-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => updateProject(project.id, { status: 'active' })}
+                          className="text-green-600 hover:text-green-600 h-8 text-xs px-2"
+                        >
+                          <Archive className="w-3 h-3 mr-1 rotate-180" />
+                          恢复
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setViewingMilestones(project)}
+                          className="h-8 text-xs px-2"
+                        >
+                          <Flag className="w-3 h-3 mr-1" />
+                          里程碑
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteProject(project.id)}
+                          className="text-destructive hover:text-destructive h-8 text-xs px-2"
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          删除
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -240,15 +253,20 @@ export function ProjectManager() {
   // 如果正在查看里程碑，显示里程碑管理界面
   if (viewingMilestones) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
+      <div className="space-y-3 px-2 sm:px-0">
+        <div className="flex flex-col gap-2">
           <Button
             variant="outline"
             onClick={() => setViewingMilestones(null)}
+            size="sm"
+            className="self-start"
           >
             ← 返回项目列表
           </Button>
-          <h2 className="text-xl font-semibold">{viewingMilestones.name} - 里程碑管理</h2>
+          <h2 className="text-base sm:text-xl font-semibold leading-tight">
+            <span className="block sm:inline">{viewingMilestones.name}</span>
+            <span className="block sm:inline text-sm sm:text-xl text-muted-foreground sm:text-current"> - 里程碑管理</span>
+          </h2>
         </div>
         <MilestoneManager
           project={viewingMilestones}
@@ -262,59 +280,72 @@ export function ProjectManager() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">项目管理</h2>
-        <div className="flex gap-2">
+    <div className="space-y-3 px-2 sm:px-0">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+        <h2 className="text-lg sm:text-xl font-semibold">项目管理</h2>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => setViewingIndustries(true)}
+              className="flex items-center gap-1 text-sm px-2 py-1 h-8"
+              size="sm"
+            >
+              <Building2 className="w-3 h-3" />
+              <span className="hidden xs:inline">行业管理</span>
+              <span className="xs:hidden">行业</span>
+              ({industries.length})
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => setViewingArchive(true)}
+              className="flex items-center gap-1 text-sm px-2 py-1 h-8"
+              size="sm"
+            >
+              <Archive className="w-3 h-3" />
+              <span className="hidden xs:inline">归档项目</span>
+              <span className="xs:hidden">归档</span>
+              ({archivedProjects.length})
+            </Button>
+          </div>
           <Button 
-            variant="outline"
-            onClick={() => setViewingIndustries(true)}
-            className="flex items-center gap-2"
+            onClick={() => {
+              setIsCreating(!isCreating)
+              if (!isCreating) {
+                setEditingProject(null)
+                setNewProject({ name: '', description: '', duration: 30, priority: 'small-potential', industryId: '' })
+              }
+            }}
+            className="text-sm px-3 py-1 h-8"
+            size="sm"
           >
-            <Building2 className="w-4 h-4" />
-            行业管理 ({industries.length})
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={() => setViewingArchive(true)}
-            className="flex items-center gap-2"
-          >
-            <Archive className="w-4 h-4" />
-            归档项目 ({archivedProjects.length})
-          </Button>
-          <Button onClick={() => {
-            setIsCreating(!isCreating)
-            if (!isCreating) {
-              setEditingProject(null)
-              setNewProject({ name: '', description: '', duration: 30, priority: 'small-potential', industryId: '' })
-            }
-          }}>
             {isCreating ? '取消' : '新建项目'}
           </Button>
         </div>
       </div>
       
       {isCreating && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{editingProject ? '编辑项目' : '新建项目'}</CardTitle>
+        <Card className="mx-2 sm:mx-0">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base sm:text-lg">{editingProject ? '编辑项目' : '新建项目'}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 px-4 pb-4">
             <Input
               placeholder="项目名称"
               value={newProject.name}
               onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+              className="h-10 text-base"
             />
             <textarea
               placeholder="项目描述"
               value={newProject.description}
               onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-              className="w-full min-h-[80px] p-2 border rounded-md text-sm"
+              className="w-full min-h-[70px] p-3 border rounded-md text-base resize-none"
             />
             <div>
-              <label className="text-sm text-muted-foreground">所属行业</label>
+              <label className="text-sm text-muted-foreground block mb-1">所属行业</label>
               <select
-                className="w-full h-10 mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="w-full h-11 rounded-md border border-input bg-background px-3 py-2 text-base"
                 value={newProject.industryId}
                 onChange={(e) => setNewProject({ ...newProject, industryId: e.target.value })}
               >
@@ -326,24 +357,24 @@ export function ProjectManager() {
                 ))}
               </select>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-sm text-muted-foreground">项目周期</label>
-                <div className="flex items-center gap-2 mt-1">
+                <label className="text-sm text-muted-foreground block mb-1">项目周期</label>
+                <div className="flex items-center gap-2">
                   <Input
                     type="number"
                     value={newProject.duration}
                     onChange={(e) => setNewProject({ ...newProject, duration: Number(e.target.value) })}
                     min="1"
-                    className="w-20"
+                    className="w-20 h-10 text-base"
                   />
                   <span className="text-sm">天</span>
                 </div>
               </div>
               <div>
-                <label className="text-sm text-muted-foreground">项目类型</label>
+                <label className="text-sm text-muted-foreground block mb-1">项目类型</label>
                 <select
-                  className="w-full h-10 mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="w-full h-11 rounded-md border border-input bg-background px-3 py-2 text-base"
                   value={newProject.priority}
                   onChange={(e) => setNewProject({ ...newProject, priority: e.target.value as Project['priority'] })}
                 >
@@ -355,27 +386,29 @@ export function ProjectManager() {
                 </select>
               </div>
             </div>
-            <div className="flex gap-2 text-xs">
-              <span className="text-muted-foreground">快捷设置周期：</span>
-              {[7, 14, 30, 60, 90].map(days => (
-                <button
-                  key={days}
-                  type="button"
-                  onClick={() => setNewProject({ ...newProject, duration: days })}
-                  className="px-2 py-1 hover:bg-gray-100 rounded"
-                >
-                  {days}天
-                </button>
-              ))}
+            <div className="space-y-2">
+              <span className="text-sm text-muted-foreground">快捷设置周期：</span>
+              <div className="flex flex-wrap gap-2">
+                {[7, 14, 30, 60, 90].map(days => (
+                  <button
+                    key={days}
+                    type="button"
+                    onClick={() => setNewProject({ ...newProject, duration: days })}
+                    className="px-3 py-2 text-sm hover:bg-gray-100 rounded-md border border-gray-200 min-w-[60px]"
+                  >
+                    {days}天
+                  </button>
+                ))}
+              </div>
             </div>
-            <Button onClick={handleCreateProject} className="w-full">
+            <Button onClick={handleCreateProject} className="w-full h-11 text-base mt-4">
               {editingProject ? '保存修改' : '创建项目'}
             </Button>
           </CardContent>
         </Card>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-2 sm:px-0">
         {activeProjects.map((project) => {
           // 安全获取项目属性，避免崩溃
           const priority = project.priority || 'small-potential'
@@ -385,79 +418,94 @@ export function ProjectManager() {
           
           return (
             <Card key={project.id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg">{project.name || '未命名项目'}</CardTitle>
-                    <CardDescription className="mt-1">{project.description || ''}</CardDescription>
+              <CardHeader className="pb-3">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-base sm:text-lg leading-tight">{project.name || '未命名项目'}</CardTitle>
+                    {project.description && (
+                      <CardDescription className="mt-1 text-sm line-clamp-2">{project.description}</CardDescription>
+                    )}
                   </div>
-                  <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded ${priorityColors[priority]}`}>
+                  <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded whitespace-nowrap ${priorityColors[priority]}`}>
                     {priorityIcons[priority]}
-                    <span>{priorityLabels[priority]}</span>
+                    <span className="hidden xs:inline">{priorityLabels[priority]}</span>
+                    <span className="xs:hidden">
+                      {priority === 'small-earning' ? '小赚钱' :
+                       priority === 'small-potential' ? '可赚钱' :
+                       priority === 'small-hobby' ? '爱好' :
+                       priority === 'earning' ? '赚钱' : '努力中'}
+                    </span>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 pb-4">
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <CalendarDays className="w-4 h-4" />
-                    <span>项目周期：{duration} 天</span>
+                    <CalendarDays className="w-3 h-3 flex-shrink-0" />
+                    <span>周期 {duration} 天</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs">
-                      创建于 {format(createdAt, 'yyyy年MM月dd日', { locale: zhCN })}，
-                      预计 {format(addDays(createdAt, duration), 'MM月dd日', { locale: zhCN })} 完成
-                    </span>
+                  <div className="text-xs">
+                    创建于 {format(createdAt, 'MM月dd日', { locale: zhCN })}，
+                    预计 {format(addDays(createdAt, duration), 'MM月dd日', { locale: zhCN })} 完成
                   </div>
                   {industry && (
                     <div className="flex items-center gap-2">
-                      <Building2 className="w-4 h-4" />
-                      <span>行业：{industry.name}</span>
+                      <Building2 className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">{industry.name}</span>
                     </div>
                   )}
-                  <div className="flex items-center gap-2">
-                    <Target className="w-4 h-4" />
-                    <span>周目标：{(project.weeklyGoals || []).length} 个</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Flag className="w-4 h-4" />
-                    <span>里程碑：{(project.milestones || []).length} 个</span>
+                  <div className="flex justify-between text-xs">
+                    <div className="flex items-center gap-1">
+                      <Target className="w-3 h-3" />
+                      <span>周目标 {(project.weeklyGoals || []).length}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Flag className="w-3 h-3" />
+                      <span>里程碑 {(project.milestones || []).length}</span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex gap-2 mt-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => startEditProject(project)}
-                  >
-                    <Edit2 className="w-4 h-4 mr-1" />
-                    编辑
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setViewingMilestones(project)}
-                  >
-                    <Flag className="w-4 h-4 mr-1" />
-                    里程碑
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => updateProject(project.id, { status: 'archived' })}
-                  >
-                    <Archive className="w-4 h-4 mr-1" />
-                    归档
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => deleteProject(project.id)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    删除
-                  </Button>
+                <div className="mt-3">
+                  <div className="grid grid-cols-2 gap-2 mb-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => startEditProject(project)}
+                      className="h-8 text-xs px-2"
+                    >
+                      <Edit2 className="w-3 h-3 mr-1" />
+                      编辑
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setViewingMilestones(project)}
+                      className="h-8 text-xs px-2"
+                    >
+                      <Flag className="w-3 h-3 mr-1" />
+                      里程碑
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateProject(project.id, { status: 'archived' })}
+                      className="h-8 text-xs px-2"
+                    >
+                      <Archive className="w-3 h-3 mr-1" />
+                      归档
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => deleteProject(project.id)}
+                      className="text-destructive hover:text-destructive h-8 text-xs px-2"
+                    >
+                      <Trash2 className="w-3 h-3 mr-1" />
+                      删除
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -466,9 +514,11 @@ export function ProjectManager() {
       </div>
       
       {activeProjects.length === 0 && !isCreating && (
-        <p className="text-center text-muted-foreground py-8">
-          暂无活跃项目，点击"新建项目"创建你的第一个项目
-        </p>
+        <div className="text-center text-muted-foreground py-8 px-4">
+          <p className="text-sm sm:text-base">
+            暂无活跃项目，点击"新建项目"创建你的第一个项目
+          </p>
+        </div>
       )}
     </div>
   )

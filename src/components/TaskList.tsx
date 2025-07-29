@@ -119,41 +119,43 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 sm:space-y-4">
       {showBatchActions && selectedTasks.length > 0 && (
-        <div className="p-3 bg-blue-50 rounded-lg flex items-center justify-between">
-          <span className="text-sm">已选择 {selectedTasks.length} 个任务</span>
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={clearSelection}>
-              取消选择
-            </Button>
-            <Button size="sm" variant="outline" onClick={selectAll}>
-              全选
-            </Button>
-            <select
-              onChange={(e) => batchUpdateStatus(e.target.value as Task['status'])}
-              className="px-3 py-1 text-sm border rounded"
-              defaultValue=""
-            >
-              <option value="" disabled>批量更新状态</option>
-              <option value="pool">任务池</option>
-              <option value="scheduled">已安排</option>
-              <option value="completed">已完成</option>
-            </select>
-            <select
-              onChange={(e) => batchUpdatePriority(e.target.value as Task['priority'])}
-              className="px-3 py-1 text-sm border rounded"
-              defaultValue=""
-            >
-              <option value="" disabled>批量更新优先级</option>
-              <option value="urgent">紧急</option>
-              <option value="high">高</option>
-              <option value="medium">中</option>
-              <option value="low">低</option>
-            </select>
-            <Button size="sm" variant="destructive" onClick={batchDelete}>
-              批量删除
-            </Button>
+        <div className="p-2 sm:p-3 bg-blue-50 rounded-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+            <span className="text-xs sm:text-sm">已选择 {selectedTasks.length} 个任务</span>
+            <div className="flex flex-wrap gap-1 sm:gap-2">
+              <Button size="sm" variant="outline" onClick={clearSelection} className="text-xs px-2 py-1">
+                取消选择
+              </Button>
+              <Button size="sm" variant="outline" onClick={selectAll} className="text-xs px-2 py-1">
+                全选
+              </Button>
+              <select
+                onChange={(e) => batchUpdateStatus(e.target.value as Task['status'])}
+                className="px-2 py-1 text-xs border rounded"
+                defaultValue=""
+              >
+                <option value="" disabled>更新状态</option>
+                <option value="pool">任务池</option>
+                <option value="scheduled">已安排</option>
+                <option value="completed">已完成</option>
+              </select>
+              <select
+                onChange={(e) => batchUpdatePriority(e.target.value as Task['priority'])}
+                className="px-2 py-1 text-xs border rounded"
+                defaultValue=""
+              >
+                <option value="" disabled>更新优先级</option>
+                <option value="urgent">紧急</option>
+                <option value="high">高</option>
+                <option value="medium">中</option>
+                <option value="low">低</option>
+              </select>
+              <Button size="sm" variant="destructive" onClick={batchDelete} className="text-xs px-2 py-1">
+                批量删除
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -172,111 +174,114 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
               "hover:shadow-md transition-shadow",
               selectedTasks.includes(task.id) && "ring-2 ring-blue-500"
             )}>
-              <CardContent className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-3 flex-1">
-                  <input
-                    type="checkbox"
-                    checked={selectedTasks.includes(task.id)}
-                    onChange={() => toggleTaskSelection(task.id)}
-                    className="w-4 h-4"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => toggleTaskStatus(task.id)}
-                    className="shrink-0"
-                  >
-                    {task.status === 'completed' ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-500" />
-                    ) : (
-                      <Circle className="w-5 h-5" />
-                    )}
-                  </Button>
-                  
-                  <div className="flex-1">
-                    <h3 className={cn(
-                      "font-medium",
-                      task.status === 'completed' && "line-through text-muted-foreground"
-                    )}>
-                      {task.title}
-                    </h3>
-                    {task.description && (
-                      <p className="text-sm text-muted-foreground">{task.description}</p>
-                    )}
-                    <div className="flex items-center gap-4 mt-1 flex-wrap">
-                      <span className={cn("flex items-center gap-1 text-sm", priorityColors[task.priority])}>
-                        {priorityIcons[task.priority]}
-                        {task.priority}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        预计 {task.estimatedHours} 小时
-                      </span>
-                      <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
-                        {task.taskType === 'daily' ? '🔁 每日任务' : 
-                         task.taskType === 'weekly' ? '📆 每周任务' :
-                         task.taskType === 'monthly' ? '🗓️ 每月任务' : '📅 单次任务'}
-                      </span>
-                      {project && (
-                        <span className="flex items-center gap-1 text-sm text-blue-600">
-                          <FolderOpen className="w-3 h-3" />
-                          {project.name}
-                        </span>
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex items-center gap-3 flex-1">
+                    <input
+                      type="checkbox"
+                      checked={selectedTasks.includes(task.id)}
+                      onChange={() => toggleTaskSelection(task.id)}
+                      className="w-4 h-4"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => toggleTaskStatus(task.id)}
+                      className="shrink-0 w-8 h-8 sm:w-10 sm:h-10"
+                    >
+                      {task.status === 'completed' ? (
+                        <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+                      ) : (
+                        <Circle className="w-4 h-4 sm:w-5 sm:h-5" />
                       )}
-                      {task.tags.length > 0 && (
-                        <div className="flex items-center gap-1">
-                          <Tag className="w-3 h-3 text-muted-foreground" />
-                          {task.tags.map(tag => (
-                            <span key={tag} className="text-xs bg-gray-100 px-2 py-0.5 rounded">
-                              {tag}
+                    </Button>
+                    
+                    <div className="flex-1 min-w-0">
+                      <h3 className={cn(
+                        "font-medium text-sm sm:text-base truncate",
+                        task.status === 'completed' && "line-through text-muted-foreground"
+                      )}>
+                        {task.title}
+                      </h3>
+                      {task.description && (
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">{task.description}</p>
+                      )}
+                      <div className="flex items-center gap-1 sm:gap-2 mt-1 flex-wrap text-xs sm:text-sm">
+                        <span className={cn("flex items-center gap-1", priorityColors[task.priority])}>
+                          {priorityIcons[task.priority]}
+                          <span className="hidden sm:inline">{task.priority}</span>
+                        </span>
+                        <span className="text-muted-foreground">
+                          {task.estimatedHours}h
+                        </span>
+                        <span className="px-1 sm:px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs">
+                          {task.taskType === 'daily' ? '🔁' : 
+                           task.taskType === 'weekly' ? '📆' :
+                           task.taskType === 'monthly' ? '🗓️' : '📅'}
+                          <span className="hidden sm:inline ml-1">
+                            {task.taskType === 'daily' ? '每日' : 
+                             task.taskType === 'weekly' ? '每周' :
+                             task.taskType === 'monthly' ? '每月' : '单次'}
+                          </span>
+                        </span>
+                        {project && (
+                          <span className="flex items-center gap-1 text-blue-600">
+                            <FolderOpen className="w-3 h-3" />
+                            <span className="truncate max-w-20">{project.name}</span>
+                          </span>
+                        )}
+                        {task.tags.length > 0 && (
+                          <div className="flex items-center gap-1">
+                            <Tag className="w-3 h-3 text-muted-foreground" />
+                            <span className="text-xs bg-gray-100 px-1 py-0.5 rounded truncate max-w-16">
+                              {task.tags[0]}{task.tags.length > 1 && '+'}
                             </span>
-                          ))}
-                        </div>
-                      )}
-                      {task.deadline && (
-                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Calendar className="w-3 h-3" />
-                          {new Date(task.deadline).toLocaleDateString('zh-CN')}
-                        </span>
-                      )}
-                      {task.dependencies && task.dependencies.length > 0 && (
-                        <span className="flex items-center gap-1 text-sm text-purple-600">
-                          <Link className="w-3 h-3" />
-                          依赖 {task.dependencies.length} 个任务
-                        </span>
-                      )}
+                          </div>
+                        )}
+                        {task.deadline && (
+                          <span className="flex items-center gap-1 text-muted-foreground">
+                            <Calendar className="w-3 h-3" />
+                            <span className="hidden sm:inline">
+                              {new Date(task.deadline).toLocaleDateString('zh-CN')}
+                            </span>
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setEditingTask(task)}
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </Button>
-                  {task.status === 'pool' && (
+                  
+                  <div className="flex gap-1 sm:gap-2 shrink-0">
                     <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleUpdateTask(task.id, { status: 'scheduled' })}
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setEditingTask(task)}
+                      className="w-8 h-8 sm:w-10 sm:h-10"
                     >
-                      安排
+                      <Edit2 className="w-3 h-3 sm:w-4 sm:h-4" />
                     </Button>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      if (window.confirm(`确定要删除任务"${task.title}"吗？此操作无法撤销。`)) {
-                        handleDeleteTask(task.id)
-                      }
-                    }}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                    {task.status === 'pool' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUpdateTask(task.id, { status: 'scheduled' })}
+                        className="text-xs px-2 py-1 sm:px-3 sm:py-2"
+                      >
+                        安排
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        if (window.confirm(`确定要删除任务"${task.title}"吗？此操作无法撤销。`)) {
+                          handleDeleteTask(task.id)
+                        }
+                      }}
+                      className="text-destructive hover:text-destructive w-8 h-8 sm:w-10 sm:h-10"
+                    >
+                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
