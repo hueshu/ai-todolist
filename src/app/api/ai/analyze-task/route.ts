@@ -3,8 +3,12 @@ import OpenAI from 'openai'
 import { TaskAnalysisRequest, TaskAnalysisResponse } from '@/types'
 
 function getOpenAI() {
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) {
+    throw new Error('OPENAI_API_KEY environment variable is missing or empty')
+  }
   return new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: apiKey,
   })
 }
 
