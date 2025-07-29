@@ -4,10 +4,15 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { getTasks, createTask } from '@/lib/database'
+import { useStore } from '@/lib/store'
 
 export function DatabaseTest() {
   const [testResult, setTestResult] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
+  
+  const tasks = useStore((state) => state.tasks)
+  const loadTasks = useStore((state) => state.loadTasks)
+  const addTask = useStore((state) => state.addTask)
 
   const testConnection = async () => {
     setIsLoading(true)
@@ -113,6 +118,39 @@ ${!isUrlValid || !isKeyValid ? '\n⚠️  请检查Vercel环境变量配置！' 
     }
   }
 
+  const testStoreOperations = async () => {
+    setIsLoading(true)
+    setTestResult('正在测试Store操作...')
+    
+    try {
+      // 显示当前store中的任务数量
+      setTestResult(`📊 Store中当前任务数: ${tasks.length}`)
+      
+      // 手动刷新数据
+      await loadTasks()
+      setTestResult(prev => prev + `\n🔄 刷新后任务数: ${tasks.length}`)
+      
+      // 测试通过store添加任务
+      const newTaskData = {
+        title: 'Store测试任务',
+        priority: 'medium' as const,
+        estimatedHours: 1,
+        status: 'pool' as const,
+        tags: [],
+        taskType: 'single' as const,
+      }
+      
+      await addTask(newTaskData)
+      setTestResult(prev => prev + `\n✅ 通过Store创建任务成功!`)
+      setTestResult(prev => prev + `\n📊 创建后任务数: ${tasks.length}`)
+      
+    } catch (error) {
+      setTestResult(prev => prev + `\n❌ Store操作失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="p-4 border rounded-lg bg-gray-50">
       <h3 className="font-bold mb-3">🔧 数据库连接测试</h3>
@@ -141,6 +179,15 @@ ${!isUrlValid || !isKeyValid ? '\n⚠️  请检查Vercel环境变量配置！' 
           className="bg-blue-500 hover:bg-blue-600"
         >
           {isLoading ? '测试中...' : '测试真实CRUD'}
+        </Button>
+        
+        <Button 
+          onClick={testStoreOperations} 
+          disabled={isLoading}
+          size="sm"
+          className="bg-green-500 hover:bg-green-600"
+        >
+          {isLoading ? '测试中...' : '测试Store操作'}
         </Button>
       </div>
       
