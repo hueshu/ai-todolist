@@ -11,6 +11,7 @@ import { Calendar, Clock, CheckCircle, Circle, AlertTriangle, Plus } from 'lucid
 import { cn, recalculateSubsequentTasks } from '@/lib/utils'
 import { Task } from '@/types'
 import { v4 as uuidv4 } from 'uuid'
+import { getBeijingTime, isBeijingToday } from '@/lib/timezone'
 
 export function TodayTaskList() {
   const [showCompleted, setShowCompleted] = useState(true)
@@ -22,7 +23,7 @@ export function TodayTaskList() {
   // 获取今日任务
   const todayTasks = tasks.filter(task => {
     if (!task.deadline) return false
-    return isToday(new Date(task.deadline))
+    return isBeijingToday(task.deadline)
   }).sort((a, b) => {
     // 首先按是否有时间安排排序
     const aHasTimeSlot = !!a.timeSlot
@@ -33,8 +34,8 @@ export function TodayTaskList() {
     
     // 如果都有时间安排，按开始时间排序
     if (aHasTimeSlot && bHasTimeSlot) {
-      const aStartTime = a.scheduledStartTime ? new Date(a.scheduledStartTime) : new Date()
-      const bStartTime = b.scheduledStartTime ? new Date(b.scheduledStartTime) : new Date()
+      const aStartTime = a.scheduledStartTime ? new Date(a.scheduledStartTime) : getBeijingTime()
+      const bStartTime = b.scheduledStartTime ? new Date(b.scheduledStartTime) : getBeijingTime()
       return aStartTime.getTime() - bStartTime.getTime()
     }
     
@@ -67,10 +68,10 @@ export function TodayTaskList() {
       priority: 'medium',
       estimatedHours: 1,
       status: 'scheduled',
-      deadline: new Date(), // 设为今天
+      deadline: getBeijingTime(), // 设为今天
       tags: [],
       taskType: 'single',
-      createdAt: new Date(),
+      createdAt: getBeijingTime(),
     }
     
     addTask(newTask)
@@ -237,7 +238,7 @@ function TaskItem({ task }: { task: Task }) {
     if (task.status === 'completed') {
       updateTask(task.id, { status: 'scheduled', completedAt: undefined })
     } else {
-      const completionTime = new Date()
+      const completionTime = getBeijingTime()
       updateTask(task.id, { status: 'completed', completedAt: completionTime })
       
       // 如果任务有时间安排，重新计算后续任务时间
@@ -253,7 +254,7 @@ function TaskItem({ task }: { task: Task }) {
         
         // 如果有调整，提示用户
         if (subsequentUpdates.length > 0) {
-          const timeDiffMinutes = Math.round((completionTime.getTime() - new Date().getTime()) / 60000)
+          const timeDiffMinutes = Math.round((completionTime.getTime() - getBeijingTime().getTime()) / 60000)
           const action = timeDiffMinutes > 0 ? '延后' : '提前'
           console.log(`任务完成时间${action}，已自动调整${subsequentUpdates.length}个后续任务的时间`)
         }

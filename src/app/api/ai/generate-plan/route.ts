@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { DailyPlanRequest, DailyPlanResponse, Task } from '@/types'
 import { format } from 'date-fns'
+import { zhCN } from 'date-fns/locale'
+import { getBeijingTime, formatBeijingTime } from '@/lib/timezone'
 
 function getOpenAI() {
   const apiKey = process.env.OPENAI_API_KEY
@@ -93,7 +95,7 @@ export async function POST(request: NextRequest) {
     const todayFixedEvents = formatFixedEventsForPrompt(body.fixedEvents || [], requestDate)
     
     // 获取当前时间或指定的开始时间
-    const startTime = body.startTime ? new Date(body.startTime) : new Date()
+    const startTime = body.startTime ? new Date(body.startTime) : getBeijingTime()
     const currentHour = startTime.getHours()
     const currentMinute = startTime.getMinutes()
     const actualStartTime = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`
@@ -172,7 +174,7 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
               status: 'scheduled' as const,
               tags: ['休息'],
               taskType: 'single' as const,
-              createdAt: new Date()
+              createdAt: getBeijingTime()
             } as Task,
             type: 'break' as const,
             reason: item.reason

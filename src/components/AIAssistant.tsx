@@ -8,6 +8,7 @@ import { useStore } from '@/lib/store'
 import { Sparkles, Send, Calendar, ListTodo, Clock, Coffee, Target } from 'lucide-react'
 import { DailyPlanResponse } from '@/types'
 import { cn } from '@/lib/utils'
+import { getBeijingTime } from '@/lib/timezone'
 
 export function AIAssistant() {
   const [message, setMessage] = useState('')
@@ -33,8 +34,8 @@ export function AIAssistant() {
         return
       }
       
-      // 使用当前时间作为起始时间点
-      const now = new Date()
+      // 使用当前北京时间作为起始时间点
+      const now = getBeijingTime()
       
       // 构建包含项目信息的任务数据
       const tasksWithProjectInfo = poolTasks.map(task => {
@@ -121,10 +122,10 @@ export function AIAssistant() {
         const [startHours, startMinutes] = startTime.split(':').map(Number)
         const [endHours, endMinutes] = endTime.split(':').map(Number)
         
-        const startDate = new Date()
+        const startDate = getBeijingTime()
         startDate.setHours(startHours, startMinutes, 0, 0)
         
-        const endDate = new Date()
+        const endDate = getBeijingTime()
         endDate.setHours(endHours, endMinutes, 0, 0)
         
         updateTask(item.task.id, {

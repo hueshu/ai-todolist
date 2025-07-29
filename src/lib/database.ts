@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { Task, Project, FixedEvent } from '@/types'
+import { getBeijingTime, toUTCString, fromUTCString } from './timezone'
 
 // 获取当前用户ID (简化版，后续可以换成真正的认证)
 function getCurrentUserId(): string {
@@ -43,7 +44,7 @@ export const taskService = {
       tags: row.tags,
       dependencies: [], // 暂时不支持
       taskType: row.task_type,
-      createdAt: new Date(row.created_at),
+      createdAt: fromUTCString(row.created_at),
       completedAt: row.completed_at ? new Date(row.completed_at) : undefined,
     })) || []
   },
@@ -166,8 +167,8 @@ export const projectService = {
       status: row.status,
       weeklyGoals: row.weekly_goals,
       milestones: [], // 暂时不支持
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      createdAt: fromUTCString(row.created_at),
+      updatedAt: fromUTCString(row.updated_at),
     })) || []
   },
 
@@ -213,7 +214,7 @@ export const projectService = {
         priority: updates.priority,
         status: updates.status,
         weekly_goals: updates.weeklyGoals,
-        updated_at: new Date().toISOString(),
+        updated_at: toUTCString(getBeijingTime()),
       })
       .eq('id', id)
       .select()
@@ -266,8 +267,8 @@ export const fixedEventService = {
       category: row.category,
       color: row.color,
       isActive: row.is_active,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      createdAt: fromUTCString(row.created_at),
+      updatedAt: fromUTCString(row.updated_at),
     })) || []
   },
 
@@ -318,7 +319,7 @@ export const fixedEventService = {
         category: updates.category,
         color: updates.color,
         is_active: updates.isActive,
-        updated_at: new Date().toISOString(),
+        updated_at: toUTCString(getBeijingTime()),
       })
       .eq('id', id)
       .select()
