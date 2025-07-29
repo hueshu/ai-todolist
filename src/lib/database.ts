@@ -141,12 +141,19 @@ export const taskService = {
   },
 
   async delete(id: string): Promise<void> {
+    console.log('Deleting task with ID:', id)
+    
     const { error } = await supabase
       .from('tasks')
       .delete()
       .eq('id', id)
     
-    if (error) throw error
+    if (error) {
+      console.error('Failed to delete task from database:', error)
+      throw error
+    }
+    
+    console.log('Task deleted successfully from database:', id)
   }
 }
 

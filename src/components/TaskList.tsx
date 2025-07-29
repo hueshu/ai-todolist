@@ -46,7 +46,7 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
 
   const handleDeleteTask = async (id: string) => {
     try {
-      await handleDeleteTask(id)
+      await deleteTask(id)
     } catch (error) {
       console.error('Failed to delete task:', error)
     }
