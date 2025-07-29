@@ -94,13 +94,6 @@ export async function POST(request: NextRequest) {
     const currentHour = startTime.getHours()
     const currentMinute = startTime.getMinutes()
     const actualStartTime = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`
-    console.log('=== 时间调试信息 ===')
-    console.log('传入的body.startTime:', body.startTime)
-    console.log('解析后的startTime对象:', startTime)
-    console.log('提取的小时和分钟:', currentHour, currentMinute)
-    console.log('最终actualStartTime:', actualStartTime)
-    console.log('当前服务器北京时间:', getBeijingTime())
-    console.log('================')
     
     // 简化版提示词，避免长度过长导致API失败
     const prompt = `作为时间管理专家，生成今日工作计划。
@@ -121,14 +114,17 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
 
 要求：
 1. 使用实际taskId，不要创造新ID
-2. 从${actualStartTime}开始连续安排
+2. **重要**：第一个时间段必须从${actualStartTime}开始，后续时间段连续安排
 3. 避开固定事件时间
 4. daily任务优先，earning项目优先
 5. 高优先级任务在精力充沛时段
 
-返回JSON：
+返回JSON格式（timeSlot格式必须是HH:mm-HH:mm）：
 {
-  "schedule": [{"timeSlot": "HH:mm-HH:mm", "taskId": "实际ID", "type": "focus|regular|break", "reason": "原因"}],
+  "schedule": [
+    {"timeSlot": "${actualStartTime}-HH:mm", "taskId": "实际ID", "type": "focus|regular|break", "reason": "原因"},
+    {"timeSlot": "HH:mm-HH:mm", "taskId": "实际ID", "type": "focus|regular|break", "reason": "原因"}
+  ],
   "suggestions": ["建议1", "建议2"],
   "estimatedProductivity": 85,
   "projectAnalysis": {"highValueProjects": "重点项目", "timeAllocation": "时间策略", "riskWarning": "风险提醒"}

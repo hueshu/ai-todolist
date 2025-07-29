@@ -36,11 +36,6 @@ export function AIAssistant() {
       
       // 在点击按钮时获取当前北京时间作为起始时间点
       const now = getBeijingTime()
-      console.log('=== 前端时间调试 ===')
-      console.log('点击时的当前北京时间:', now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0'))
-      console.log('北京时间对象:', now)
-      console.log('ISO字符串:', now.toISOString())
-      console.log('================')
       
       // 构建包含项目信息的任务数据
       const tasksWithProjectInfo = poolTasks.map(task => {
