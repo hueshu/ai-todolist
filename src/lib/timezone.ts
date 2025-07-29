@@ -5,8 +5,8 @@
  * 使用最简单直接的方法确保准确性
  */
 export function getBeijingTime(): Date {
-  // 直接使用北京时区创建时间对象
-  return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }))
+  // 直接返回当前时间，因为系统已经在北京时区
+  return new Date()
 }
 
 /**

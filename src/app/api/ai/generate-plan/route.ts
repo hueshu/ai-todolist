@@ -90,18 +90,12 @@ export async function POST(request: NextRequest) {
     const todayFixedEvents = formatFixedEventsForPrompt(body.fixedEvents || [], requestDate)
     
     // 获取当前时间或指定的开始时间
-    const startTime = body.startTime ? new Date(body.startTime) : getBeijingTime()
+    const startTime = body.startTime ? new Date(body.startTime) : new Date()
+    // 确保使用本地时间（北京时间）
     const currentHour = startTime.getHours()
     const currentMinute = startTime.getMinutes()
     const actualStartTime = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`
     
-    console.log('=== 时间校正调试 ===')
-    console.log('传入的body.startTime:', body.startTime)
-    console.log('解析后的startTime对象:', startTime)
-    console.log('startTime.getHours():', startTime.getHours())
-    console.log('startTime.getMinutes():', startTime.getMinutes())
-    console.log('提取的actualStartTime:', actualStartTime)
-    console.log('==================')
     
     // 解析停止工作时间
     const workEndTime = body.workEndTime || '18:00'
@@ -241,13 +235,6 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
       
       const correctedTimeSlot = `${startHour}:${startMin}-${endHour}:${endMin}`
       
-      if (index === 0) {
-        console.log('第一个任务的时间校正:')
-        console.log('  - startTime:', startTime)
-        console.log('  - taskStartTime:', taskStartTime)
-        console.log('  - 原始时间段:', item.timeSlot)
-        console.log('  - 校正后时间段:', correctedTimeSlot)
-      }
       
       return {
         ...item,
