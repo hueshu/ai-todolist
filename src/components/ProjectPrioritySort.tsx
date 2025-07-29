@@ -1,0 +1,270 @@
+"use client"
+
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useStore } from '@/lib/store'
+import { Project } from '@/types'
+import { ArrowLeft, Save, GripVertical, Hash } from 'lucide-react'
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+
+interface ProjectPrioritySortProps {
+  onBack: () => void
+}
+
+interface SortableProjectItemProps {
+  project: Project
+  index: number
+  onOrderChange: (projectId: string, newOrder: number) => void
+}
+
+function SortableProjectItem({ project, index, onOrderChange }: SortableProjectItemProps) {
+  const [inputValue, setInputValue] = useState(index + 1)
+  
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: project.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  const priorityLabels = {
+    'small-earning': '小项目在赚钱',
+    'small-potential': '小项目可能赚钱',
+    'small-hobby': '小项目是爱好',
+    'earning': '项目赚钱',
+    'working-on-earning': '项目正在努力实现赚钱'
+  }
+
+  const priorityColors = {
+    'small-earning': 'bg-green-100 text-green-800',
+    'small-potential': 'bg-blue-100 text-blue-800',
+    'small-hobby': 'bg-purple-100 text-purple-800',
+    'earning': 'bg-emerald-100 text-emerald-800',
+    'working-on-earning': 'bg-orange-100 text-orange-800'
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="bg-white rounded-lg border p-4 mb-3 shadow-sm hover:shadow-md transition-shadow"
+    >
+      <div className="flex items-center gap-4">
+        {/* 拖拽手柄 */}
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
+        >
+          <GripVertical className="w-5 h-5" />
+        </div>
+
+        {/* 优先级编号 */}
+        <div className="flex items-center gap-2">
+          <Hash className="w-4 h-4 text-gray-400" />
+          <input
+            type="number"
+            value={inputValue}
+            onChange={(e) => setInputValue(Number(e.target.value))}
+            onBlur={() => {
+              if (inputValue !== index + 1 && inputValue > 0) {
+                onOrderChange(project.id, inputValue - 1)
+              }
+            }}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                e.currentTarget.blur()
+              }
+            }}
+            className="w-16 px-2 py-1 text-center border rounded-md text-sm"
+            min="1"
+          />
+        </div>
+
+        {/* 项目信息 */}
+        <div className="flex-1">
+          <div className="flex items-center gap-3">
+            <h3 className="font-semibold text-lg">{project.name}</h3>
+            <span className={`text-xs px-2 py-1 rounded ${priorityColors[project.priority]}`}>
+              {priorityLabels[project.priority]}
+            </span>
+          </div>
+          {project.description && (
+            <p className="text-sm text-gray-600 mt-1">{project.description}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function ProjectPrioritySort({ onBack }: ProjectPrioritySortProps) {
+  const projects = useStore((state) => state.projects)
+  const updateProject = useStore((state) => state.updateProject)
+  
+  // 只显示活跃项目，并创建本地排序状态
+  const [sortedProjects, setSortedProjects] = useState<Project[]>([])
+  const [hasChanges, setHasChanges] = useState(false)
+
+  useEffect(() => {
+    const activeProjects = projects
+      .filter(p => p.status === 'active')
+      .sort((a, b) => {
+        // 根据优先级预设顺序排序
+        const priorityOrder = {
+          'earning': 0,
+          'working-on-earning': 1,
+          'small-earning': 2,
+          'small-potential': 3,
+          'small-hobby': 4
+        }
+        return priorityOrder[a.priority] - priorityOrder[b.priority]
+      })
+    setSortedProjects(activeProjects)
+  }, [projects])
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (active.id !== over?.id) {
+      setSortedProjects((items) => {
+        const oldIndex = items.findIndex((i) => i.id === active.id)
+        const newIndex = items.findIndex((i) => i.id === over?.id)
+        setHasChanges(true)
+        return arrayMove(items, oldIndex, newIndex)
+      })
+    }
+  }
+
+  const handleOrderChange = (projectId: string, newOrder: number) => {
+    setSortedProjects((items) => {
+      const currentIndex = items.findIndex(p => p.id === projectId)
+      if (currentIndex === -1) return items
+      
+      // 确保新位置在有效范围内
+      const targetIndex = Math.max(0, Math.min(items.length - 1, newOrder))
+      
+      if (currentIndex !== targetIndex) {
+        setHasChanges(true)
+        return arrayMove(items, currentIndex, targetIndex)
+      }
+      return items
+    })
+  }
+
+  const handleSave = async () => {
+    // 根据新的排序顺序更新项目优先级
+    const priorityMapping = [
+      'earning',
+      'working-on-earning',
+      'small-earning',
+      'small-potential',
+      'small-hobby'
+    ] as const
+
+    // 为每个项目分配新的优先级
+    for (let i = 0; i < sortedProjects.length; i++) {
+      const project = sortedProjects[i]
+      const newPriority = priorityMapping[Math.min(i, priorityMapping.length - 1)]
+      
+      if (project.priority !== newPriority) {
+        await updateProject(project.id, { priority: newPriority })
+      }
+    }
+    
+    setHasChanges(false)
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={onBack}
+            size="sm"
+          >
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            返回
+          </Button>
+          <h2 className="text-xl font-semibold">项目优先级排序</h2>
+        </div>
+        <Button 
+          onClick={handleSave}
+          disabled={!hasChanges}
+          className="gap-2"
+        >
+          <Save className="w-4 h-4" />
+          保存排序
+        </Button>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">排序说明</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm text-gray-600 space-y-2">
+            <p>• 拖拽项目卡片来调整顺序</p>
+            <p>• 或者直接修改序号（输入后按回车或点击其他地方）</p>
+            <p>• 排序越靠前，优先级越高：</p>
+            <div className="ml-4 space-y-1 text-xs">
+              <p>1. 项目赚钱（最高优先级）</p>
+              <p>2. 项目正在努力实现赚钱</p>
+              <p>3. 小项目在赚钱</p>
+              <p>4. 小项目可能赚钱</p>
+              <p>5. 小项目是爱好（最低优先级）</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="bg-gray-50 rounded-lg p-4">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={sortedProjects.map(p => p.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {sortedProjects.map((project, index) => (
+              <SortableProjectItem
+                key={project.id}
+                project={project}
+                index={index}
+                onOrderChange={handleOrderChange}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
+      </div>
+
+      {sortedProjects.length === 0 && (
+        <div className="text-center py-8 text-gray-500">
+          暂无活跃项目
+        </div>
+      )}
+    </div>
+  )
+}
