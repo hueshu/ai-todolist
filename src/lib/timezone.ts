@@ -5,12 +5,8 @@
  * 使用最简单直接的方法确保准确性
  */
 export function getBeijingTime(): Date {
-  // 获取当前UTC时间的毫秒数
-  const now = new Date()
-  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000)
-  // 加上8小时（北京时间 = UTC + 8小时）
-  const beijingTime = new Date(utcTime + (8 * 3600000))
-  return beijingTime
+  // 直接使用北京时区创建时间对象
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }))
 }
 
 /**

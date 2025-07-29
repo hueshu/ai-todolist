@@ -94,6 +94,13 @@ export async function POST(request: NextRequest) {
     const currentHour = startTime.getHours()
     const currentMinute = startTime.getMinutes()
     const actualStartTime = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`
+    console.log('=== 时间调试信息 ===')
+    console.log('传入的body.startTime:', body.startTime)
+    console.log('解析后的startTime对象:', startTime)
+    console.log('提取的小时和分钟:', currentHour, currentMinute)
+    console.log('最终actualStartTime:', actualStartTime)
+    console.log('当前服务器北京时间:', getBeijingTime())
+    console.log('================')
     
     // 简化版提示词，避免长度过长导致API失败
     const prompt = `作为时间管理专家，生成今日工作计划。
