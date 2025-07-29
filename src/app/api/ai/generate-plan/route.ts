@@ -152,9 +152,13 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
     console.log('Sending to OpenAI with prompt length:', prompt.length)
     
     const openai = getOpenAI()
+    // 支持通过环境变量配置模型，默认使用gpt-4o
+    const aiModel = process.env.OPENAI_MODEL || 'gpt-4o'
+    console.log('Using AI model:', aiModel)
+    
     const completion = await openai.chat.completions.create({
       messages: [{ role: "system", content: prompt }],
-      model: "gpt-4o-mini",
+      model: aiModel,
       response_format: { type: "json_object" },
     })
 
