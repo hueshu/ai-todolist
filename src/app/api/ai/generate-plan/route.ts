@@ -101,6 +101,9 @@ export async function POST(request: NextRequest) {
     console.log('提取的actualStartTime:', actualStartTime)
     console.log('==================')
     
+    // 解析停止工作时间
+    const workEndTime = body.workEndTime || '18:00'
+    
     // 简化版提示词，避免长度过长导致API失败
     const prompt = `作为时间管理专家，生成今日工作计划。
 
@@ -189,14 +192,13 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
       return hours * 60 + minutes
     }
     
-    // 解析停止工作时间
-    const workEndTime = body.workEndTime || '18:00'
+    // 创建停止工作时间的Date对象
     const [endHour, endMin] = workEndTime.split(':').map(Number)
     const workEndDate = new Date(startTime)
     workEndDate.setHours(endHour, endMin, 0, 0)
     
     // 校正时间安排 - 简化版本，直接重建时间，确保不超过停止工作时间
-    const correctedSchedule = (result.schedule || []).filter((item, index) => {
+    const correctedSchedule = (result.schedule || []).filter((item: any, index: number) => {
       // 计算每个任务应该开始的时间
       let taskStartTime = new Date(startTime)
       
@@ -277,7 +279,7 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
         type: item.type as 'focus' | 'regular' | 'break',
         reason: item.reason || '工作任务'
       }
-    }).filter((item): item is NonNullable<typeof item> => item !== null)
+    }).filter((item: any): item is NonNullable<typeof item> => item !== null)
 
     const response: DailyPlanResponse = {
       schedule: scheduleItems,

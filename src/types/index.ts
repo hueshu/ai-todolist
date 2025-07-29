@@ -72,6 +72,7 @@ export interface TaskAnalysisResponse {
 export interface DailyPlanRequest {
   date: Date;
   startTime?: Date; // 计划开始时间
+  workEndTime?: string; // 停止工作时间，格式: "HH:mm"
   availableHours: number;
   existingTasks: (Task & { project?: Partial<Project> | null })[]; // 包含项目信息的任务
   projects: Project[]; // 所有项目信息
