@@ -40,44 +40,44 @@ export function DashboardHeader() {
       </div>
       
       {/* 统计卡片区域 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-3xl mx-auto">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-3 text-center">
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
-              <span className="text-white font-bold text-sm">📋</span>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 max-w-2xl mx-auto">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-md transition-all duration-300">
+          <CardContent className="px-2 py-2 text-center">
+            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-1">
+              <span className="text-white font-bold text-xs">📋</span>
             </div>
-            <p className="text-xs text-blue-600 font-medium mb-1">今日待办</p>
-            <p className="text-xl font-bold text-blue-800">{pendingToday.length}</p>
+            <p className="text-xs text-blue-600 font-medium mb-0.5">今日待办</p>
+            <p className="text-lg font-bold text-blue-800">{pendingToday.length}</p>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-3 text-center">
-            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
-              <span className="text-white font-bold text-sm">✅</span>
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-md transition-all duration-300">
+          <CardContent className="px-2 py-2 text-center">
+            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-1">
+              <span className="text-white font-bold text-xs">✅</span>
             </div>
-            <p className="text-xs text-green-600 font-medium mb-1">今日完成</p>
-            <p className="text-xl font-bold text-green-800">{completedToday.length}</p>
+            <p className="text-xs text-green-600 font-medium mb-0.5">今日完成</p>
+            <p className="text-lg font-bold text-green-800">{completedToday.length}</p>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-3 text-center">
-            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-2">
-              <span className="text-white font-bold text-sm">⏰</span>
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-md transition-all duration-300">
+          <CardContent className="px-2 py-2 text-center">
+            <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-1">
+              <span className="text-white font-bold text-xs">⏰</span>
             </div>
-            <p className="text-xs text-orange-600 font-medium mb-1">计划工时</p>
-            <p className="text-xl font-bold text-orange-800">{totalHoursToday.toFixed(1)}h</p>
+            <p className="text-xs text-orange-600 font-medium mb-0.5">计划工时</p>
+            <p className="text-lg font-bold text-orange-800">{totalHoursToday.toFixed(1)}h</p>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-3 text-center">
-            <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-2">
-              <span className="text-white font-bold text-sm">⚡</span>
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-md transition-all duration-300">
+          <CardContent className="px-2 py-2 text-center">
+            <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-1">
+              <span className="text-white font-bold text-xs">⚡</span>
             </div>
-            <p className="text-xs text-purple-600 font-medium mb-1">完成工时</p>
-            <p className="text-xl font-bold text-purple-800">{completedHoursToday.toFixed(1)}h</p>
+            <p className="text-xs text-purple-600 font-medium mb-0.5">完成工时</p>
+            <p className="text-lg font-bold text-purple-800">{completedHoursToday.toFixed(1)}h</p>
           </CardContent>
         </Card>
       </div>
