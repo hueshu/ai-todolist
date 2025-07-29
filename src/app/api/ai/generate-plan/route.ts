@@ -15,16 +15,6 @@ function getOpenAI() {
   })
 }
 
-function getWorkingHours(workStyle: string) {
-  switch (workStyle) {
-    case 'morning-person':
-      return { start: 8, peak: [9, 12] }
-    case 'night-owl':
-      return { start: 10, peak: [14, 18] }
-    default:
-      return { start: 9, peak: [10, 12, 14, 16] }
-  }
-}
 
 function formatFixedEventsForPrompt(fixedEvents: any[], date: Date) {
   // 确保 date 是 Date 对象
@@ -52,8 +42,6 @@ export async function POST(request: NextRequest) {
     console.log('Generate plan API called')
     const body: DailyPlanRequest = await request.json()
     console.log('Request body:', JSON.stringify(body, null, 2))
-    
-    const workHours = getWorkingHours(body.preferences.workStyle)
     
     // 分析项目优先级分布
     const projectPriorityMap: Record<string, string> = {
@@ -130,9 +118,7 @@ export async function POST(request: NextRequest) {
 
 基本信息：
 - 当前北京时间：${actualStartTime}
-- 可用时间：${body.availableHours}小时，从${actualStartTime}开始（北京时间）
 - 停止工作时间：${workEndTime}（北京时间，请确保所有任务在此时间前完成）
-- 工作风格：${body.preferences.workStyle}
 - 深度工作块：${body.preferences.focusBlocks}个，每${body.preferences.breakFrequency}分钟休息
 
 固定事件（必须避开）：
