@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
 基本信息：
 - 当前北京时间：${actualStartTime}
 - 停止工作时间：${workEndTime}（北京时间，请确保所有任务在此时间前完成）
-- 深度工作块：${body.preferences.focusBlocks}个，每${body.preferences.breakFrequency}分钟休息
+- 使用番茄工作法：每工作30分钟，休息5分钟
 
 固定事件（必须避开）：
 ${JSON.stringify(todayFixedEvents, null, 2)}
@@ -137,6 +137,9 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
 4. 避开固定事件时间
 5. daily任务优先，earning项目优先
 6. 高优先级任务在精力充沛时段
+7. **番茄工作法**：尽量将任务安排为30分钟的工作块，每个工作块后安排5分钟休息
+   - 如果任务需要1小时，可以拆分为2个30分钟的番茄钟
+   - 休息时间请明确标注为"break"类型
 
 返回JSON格式（timeSlot格式必须是HH:mm-HH:mm）：
 {
@@ -191,10 +194,10 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
         return endMinutes - startMinutes
       }
       
-      // 默认时长
-      if (type === 'break') return 15
-      if (type === 'focus') return 90
-      return 60 // regular
+      // 默认时长（符合番茄工作法）
+      if (type === 'break') return 5  // 休息5分钟
+      if (type === 'focus') return 30 // 专注工作30分钟
+      return 30 // regular也是30分钟
     }
     
     

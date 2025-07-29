@@ -184,7 +184,8 @@ export function AIAssistant() {
             </div>
             
             <div className="text-center">
-              <p className="text-muted-foreground mb-1">每{preferences.breakFrequency}分钟休息一次</p>
+              <p className="text-muted-foreground mb-1">番茄工作法</p>
+              <p className="text-xs text-gray-500">工作30分钟，休息5分钟</p>
               <p className="text-xs text-gray-500">工作时间: 当前时间 - {workEndTime}</p>
             </div>
             
