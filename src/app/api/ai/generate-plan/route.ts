@@ -106,6 +106,7 @@ export async function POST(request: NextRequest) {
 
 基本信息：
 - 可用时间：${body.availableHours}小时，从${actualStartTime}开始
+- 停止工作时间：${workEndTime}（请确保所有任务在此时间前完成）
 - 工作风格：${body.preferences.workStyle}
 - 深度工作块：${body.preferences.focusBlocks}个，每${body.preferences.breakFrequency}分钟休息
 
@@ -121,9 +122,10 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
 要求：
 1. 使用实际taskId，不要创造新ID
 2. **重要**：第一个时间段必须从${actualStartTime}开始，后续时间段连续安排
-3. 避开固定事件时间
-4. daily任务优先，earning项目优先
-5. 高优先级任务在精力充沛时段
+3. **重要**：所有任务必须在${workEndTime}前结束，不要安排超过此时间的任务
+4. 避开固定事件时间
+5. daily任务优先，earning项目优先
+6. 高优先级任务在精力充沛时段
 
 返回JSON格式（timeSlot格式必须是HH:mm-HH:mm）：
 {
@@ -187,8 +189,27 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
       return hours * 60 + minutes
     }
     
-    // 校正时间安排 - 简化版本，直接重建时间
-    const correctedSchedule = (result.schedule || []).map((item: any, index: number) => {
+    // 解析停止工作时间
+    const workEndTime = body.workEndTime || '18:00'
+    const [endHour, endMin] = workEndTime.split(':').map(Number)
+    const workEndDate = new Date(startTime)
+    workEndDate.setHours(endHour, endMin, 0, 0)
+    
+    // 校正时间安排 - 简化版本，直接重建时间，确保不超过停止工作时间
+    const correctedSchedule = (result.schedule || []).filter((item, index) => {
+      // 计算每个任务应该开始的时间
+      let taskStartTime = new Date(startTime)
+      
+      // 为前面的任务累加时间
+      for (let i = 0; i < index; i++) {
+        const prevItem = result.schedule[i]
+        const duration = calculateDuration(prevItem.timeSlot, prevItem.type)
+        taskStartTime = new Date(taskStartTime.getTime() + duration * 60000)
+      }
+      
+      // 检查任务开始时间是否超过停止工作时间
+      return taskStartTime < workEndDate
+    }).map((item: any, index: number) => {
       // 计算每个任务应该开始的时间
       let taskStartTime = new Date(startTime)
       
@@ -201,7 +222,12 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
       
       // 计算当前任务的结束时间
       const duration = calculateDuration(item.timeSlot, item.type)
-      const taskEndTime = new Date(taskStartTime.getTime() + duration * 60000)
+      let taskEndTime = new Date(taskStartTime.getTime() + duration * 60000)
+      
+      // 如果任务结束时间超过停止工作时间，则调整为停止工作时间
+      if (taskEndTime > workEndDate) {
+        taskEndTime = new Date(workEndDate)
+      }
       
       // 格式化时间
       const startHour = taskStartTime.getHours().toString().padStart(2, '0')

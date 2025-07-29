@@ -15,6 +15,7 @@ export function AIAssistant() {
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false)
   const [dailyPlan, setDailyPlan] = useState<DailyPlanResponse | null>(null)
   const [availableHours, setAvailableHours] = useState(8)
+  const [workEndTime, setWorkEndTime] = useState('18:00')
   
   const tasks = useStore((state) => state.tasks)
   const projects = useStore((state) => state.projects)
@@ -78,6 +79,7 @@ export function AIAssistant() {
         body: JSON.stringify({
           date: now,
           startTime: now, // 添加起始时间
+          workEndTime: workEndTime, // 添加停止工作时间
           availableHours: availableHours,
           existingTasks: tasksWithProjectInfo,
           projects: projects,
@@ -159,11 +161,23 @@ export function AIAssistant() {
         </CardHeader>
         <CardContent className="pt-0">
           <div className="space-y-3 sm:space-y-4">
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm">
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm mb-3">
               <div className="text-center">
                 <p className="text-muted-foreground mb-1">待安排任务</p>
                 <p className="text-lg sm:text-2xl font-bold">{tasks.filter(t => t.status === 'pool').length}</p>
               </div>
+              <div className="text-center">
+                <p className="text-muted-foreground mb-1">停止工作时间</p>
+                <Input
+                  type="time"
+                  value={workEndTime}
+                  onChange={(e) => setWorkEndTime(e.target.value)}
+                  className="w-full h-6 sm:h-8 text-xs sm:text-sm text-center"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm">
               <div className="text-center">
                 <p className="text-muted-foreground mb-1">可用时间</p>
                 <div className="flex items-center justify-center gap-1">
@@ -190,23 +204,6 @@ export function AIAssistant() {
                   <option value="balanced">平衡型</option>
                 </select>
               </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
-              <div className="text-center">
-                <p className="text-muted-foreground mb-1">深度工作块</p>
-                <div className="flex items-center justify-center gap-1">
-                  <Input
-                    type="number"
-                    value={preferences.focusBlocks}
-                    onChange={(e) => updatePreferences({ focusBlocks: Number(e.target.value) })}
-                    className="w-12 sm:w-16 h-6 sm:h-8 text-xs sm:text-sm text-center"
-                    min="1"
-                    max="5"
-                  />
-                  <span className="text-xs sm:text-sm">个</span>
-                </div>
-              </div>
               <div className="text-center">
                 <p className="text-muted-foreground mb-1">休息频率</p>
                 <div className="flex items-center justify-center gap-1">
@@ -223,6 +220,7 @@ export function AIAssistant() {
                 </div>
               </div>
             </div>
+            
             
             <Button 
               onClick={handleGeneratePlan}
