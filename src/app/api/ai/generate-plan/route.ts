@@ -117,7 +117,6 @@ export async function POST(request: NextRequest) {
     }
     
     // 添加时区调试信息
-    console.log('[时区信息] 环境变量TZ:', process.env.TZ)
     console.log('[时区信息] 服务器当前时间:', new Date().toString())
     console.log('[时区信息] 服务器时区偏移:', new Date().getTimezoneOffset())
     console.log('[时区信息] 最终使用的开始时间:', actualStartTime)

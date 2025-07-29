@@ -8,12 +8,6 @@ export function getBeijingTime(): Date {
   // 获取当前时间
   const now = new Date()
   
-  // 如果环境变量TZ已设置为Asia/Shanghai，直接返回
-  if (process.env.TZ === 'Asia/Shanghai') {
-    return now
-  }
-  
-  // 否则手动计算北京时间
   // 获取本地时间与UTC的差值（分钟）
   const offset = now.getTimezoneOffset()
   // 北京时间是UTC+8，即480分钟
