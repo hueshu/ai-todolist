@@ -116,15 +116,14 @@ export async function POST(request: NextRequest) {
       console.log('[时间处理] 使用服务器当前北京时间:', actualStartTime)
     }
     
+    // 解析停止工作时间
+    const workEndTime = body.workEndTime || '18:00'
+    
     // 添加时区调试信息
     console.log('[时区信息] 服务器当前时间:', new Date().toString())
     console.log('[时区信息] 服务器时区偏移:', new Date().getTimezoneOffset())
     console.log('[时区信息] 最终使用的开始时间:', actualStartTime)
     console.log('[时区信息] 停止工作时间:', workEndTime)
-    
-    
-    // 解析停止工作时间
-    const workEndTime = body.workEndTime || '18:00'
     
     // 简化版提示词，避免长度过长导致API失败
     const prompt = `作为时间管理专家，生成今日工作计划。注意：所有时间都是北京时间（UTC+8）。
@@ -245,22 +244,22 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
       // 计算任务的开始和结束时间
       const startHour = Math.floor(currentTimeInMinutes / 60)
       const startMin = currentTimeInMinutes % 60
-      const endTimeInMinutes = currentTimeInMinutes + duration
-      const endHour = Math.floor(endTimeInMinutes / 60)
-      const endMin = endTimeInMinutes % 60
+      const taskEndTimeInMinutes = currentTimeInMinutes + duration
+      const endHour = Math.floor(taskEndTimeInMinutes / 60)
+      const endMin = taskEndTimeInMinutes % 60
       
       const correctedTimeSlot = `${startHour.toString().padStart(2, '0')}:${startMin.toString().padStart(2, '0')}-${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`
       
       console.log('[时间校正] 任务', index + 1, ':', item.taskId, '原时间:', item.timeSlot, '校正后:', correctedTimeSlot)
       
       // 更新当前时间为任务结束时间
-      currentTimeInMinutes = endTimeInMinutes
+      currentTimeInMinutes = taskEndTimeInMinutes
       
       return {
         ...item,
         timeSlot: correctedTimeSlot
       }
-    }).filter(item => item !== null)
+    }).filter((item: any) => item !== null)
     
     // 处理返回的数据，确保taskId正确映射到任务
     const scheduleItems = correctedSchedule.map((item: any) => {
