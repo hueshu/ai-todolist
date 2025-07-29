@@ -38,7 +38,7 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
   // 异步包装函数
   const handleUpdateTask = async (id: string, updates: Partial<Task>) => {
     try {
-      await handleUpdateTask(id, updates)
+      await updateTask(id, updates)
     } catch (error) {
       console.error('Failed to update task:', error)
     }

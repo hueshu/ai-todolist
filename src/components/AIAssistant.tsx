@@ -34,7 +34,7 @@ export function AIAssistant() {
         return
       }
       
-      // 使用当前北京时间作为起始时间点
+      // 在点击按钮时获取当前北京时间作为起始时间点
       const now = getBeijingTime()
       
       // 构建包含项目信息的任务数据
@@ -302,30 +302,6 @@ export function AIAssistant() {
                 </div>
               )}
               
-              {dailyPlan.projectAnalysis && (
-                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                    <Target className="w-4 h-4 text-blue-600" />
-                    项目分析
-                  </p>
-                  <div className="text-sm space-y-2 text-gray-700">
-                    <div>
-                      <span className="font-medium">重点项目：</span>
-                      <span>{dailyPlan.projectAnalysis.highValueProjects}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium">时间策略：</span>
-                      <span>{dailyPlan.projectAnalysis.timeAllocation}</span>
-                    </div>
-                    {dailyPlan.projectAnalysis.riskWarning !== '暂无风险提醒' && (
-                      <div>
-                        <span className="font-medium text-red-600">风险提醒：</span>
-                        <span className="text-red-600">{dailyPlan.projectAnalysis.riskWarning}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
               
               <div className="flex justify-between items-center mt-4 pt-4 border-t">
                 <div>

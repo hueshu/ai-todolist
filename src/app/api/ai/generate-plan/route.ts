@@ -33,15 +33,10 @@ function formatFixedEventsForPrompt(fixedEvents: any[], date: Date) {
   // 获取今天是星期几 (0=周日, 1=周一, ..., 6=周六)
   const dayOfWeek = targetDate.getDay()
   
-  console.log('Target date:', targetDate, 'Day of week:', dayOfWeek)
-  console.log('Fixed events:', fixedEvents)
-  
   // 筛选出今天应该发生的固定事件
   const todayEvents = fixedEvents.filter(event => 
     event.isActive && Array.isArray(event.daysOfWeek) && event.daysOfWeek.includes(dayOfWeek)
   )
-  
-  console.log('Today events:', todayEvents)
   
   return todayEvents.map(event => ({
     title: event.title,
