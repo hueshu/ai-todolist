@@ -38,7 +38,7 @@ export const taskService = {
       timeSlot: row.time_slot || undefined,
       status: row.status,
       tags: row.tags,
-      dependencies: [], // 暂时不支持
+      dependencies: row.dependencies || [],
       taskType: row.task_type,
       createdAt: fromUTCString(row.created_at),
       completedAt: row.completed_at ? new Date(row.completed_at) : undefined,
@@ -64,6 +64,7 @@ export const taskService = {
         time_slot: task.timeSlot || null,
         status: task.status,
         tags: task.tags,
+        dependencies: task.dependencies || [],
         task_type: task.taskType,
         completed_at: task.completedAt?.toISOString() || null,
       })
@@ -90,7 +91,7 @@ export const taskService = {
       timeSlot: data.time_slot || undefined,
       status: data.status,
       tags: data.tags,
-      dependencies: [],
+      dependencies: data.dependencies || [],
       taskType: data.task_type,
       createdAt: new Date(data.created_at),
       completedAt: data.completed_at ? new Date(data.completed_at) : undefined,
@@ -112,6 +113,7 @@ export const taskService = {
         time_slot: updates.timeSlot || null,
         status: updates.status,
         tags: updates.tags,
+        dependencies: updates.dependencies,
         task_type: updates.taskType,
         completed_at: updates.completedAt?.toISOString() || null,
       })
@@ -133,7 +135,7 @@ export const taskService = {
       timeSlot: data.time_slot || undefined,
       status: data.status,
       tags: data.tags,
-      dependencies: [],
+      dependencies: data.dependencies || [],
       taskType: data.task_type,
       createdAt: new Date(data.created_at),
       completedAt: data.completed_at ? new Date(data.completed_at) : undefined,

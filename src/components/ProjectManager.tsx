@@ -16,6 +16,7 @@ import { IndustryManager } from './IndustryManager'
 export function ProjectManager() {
   const [isCreating, setIsCreating] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [editingPriority, setEditingPriority] = useState<string | null>(null)
   const [viewingMilestones, setViewingMilestones] = useState<Project | null>(null)
   const [viewingArchive, setViewingArchive] = useState(false)
   const [viewingIndustries, setViewingIndustries] = useState(false)
@@ -176,16 +177,39 @@ export function ProjectManager() {
                           <CardDescription className="mt-1 text-sm line-clamp-2">{project.description}</CardDescription>
                         )}
                       </div>
-                      <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded whitespace-nowrap ${priorityColors[priority]}`}>
-                        {priorityIcons[priority]}
-                        <span className="hidden xs:inline">{priorityLabels[priority]}</span>
-                        <span className="xs:hidden">
-                          {priority === 'small-earning' ? '小赚钱' :
-                           priority === 'small-potential' ? '可赚钱' :
-                           priority === 'small-hobby' ? '爱好' :
-                           priority === 'earning' ? '赚钱' : '努力中'}
-                        </span>
-                      </div>
+                      {editingPriority === project.id ? (
+                        <select
+                          value={priority}
+                          onChange={async (e) => {
+                            await updateProject(project.id, { priority: e.target.value as Project['priority'] })
+                            setEditingPriority(null)
+                          }}
+                          onBlur={() => setEditingPriority(null)}
+                          className="text-xs px-2 py-1 rounded border"
+                          autoFocus
+                        >
+                          <option value="small-earning">小项目在赚钱</option>
+                          <option value="small-potential">小项目可能赚钱</option>
+                          <option value="small-hobby">小项目是爱好</option>
+                          <option value="earning">项目赚钱</option>
+                          <option value="working-on-earning">项目正在努力实现赚钱</option>
+                        </select>
+                      ) : (
+                        <div 
+                          className={`flex items-center gap-1 text-xs px-2 py-1 rounded whitespace-nowrap cursor-pointer hover:opacity-80 ${priorityColors[priority]}`}
+                          onClick={() => setEditingPriority(project.id)}
+                          title="点击编辑优先级"
+                        >
+                          {priorityIcons[priority]}
+                          <span className="hidden xs:inline">{priorityLabels[priority]}</span>
+                          <span className="xs:hidden">
+                            {priority === 'small-earning' ? '小赚钱' :
+                             priority === 'small-potential' ? '可赚钱' :
+                             priority === 'small-hobby' ? '爱好' :
+                             priority === 'earning' ? '赚钱' : '努力中'}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent className="px-4 pb-4">
@@ -426,16 +450,39 @@ export function ProjectManager() {
                       <CardDescription className="mt-1 text-sm line-clamp-2">{project.description}</CardDescription>
                     )}
                   </div>
-                  <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded whitespace-nowrap ${priorityColors[priority]}`}>
-                    {priorityIcons[priority]}
-                    <span className="hidden xs:inline">{priorityLabels[priority]}</span>
-                    <span className="xs:hidden">
-                      {priority === 'small-earning' ? '小赚钱' :
-                       priority === 'small-potential' ? '可赚钱' :
-                       priority === 'small-hobby' ? '爱好' :
-                       priority === 'earning' ? '赚钱' : '努力中'}
-                    </span>
-                  </div>
+                  {editingPriority === project.id ? (
+                    <select
+                      value={priority}
+                      onChange={async (e) => {
+                        await updateProject(project.id, { priority: e.target.value as Project['priority'] })
+                        setEditingPriority(null)
+                      }}
+                      onBlur={() => setEditingPriority(null)}
+                      className="text-xs px-2 py-1 rounded border"
+                      autoFocus
+                    >
+                      <option value="small-earning">小项目在赚钱</option>
+                      <option value="small-potential">小项目可能赚钱</option>
+                      <option value="small-hobby">小项目是爱好</option>
+                      <option value="earning">项目赚钱</option>
+                      <option value="working-on-earning">项目正在努力实现赚钱</option>
+                    </select>
+                  ) : (
+                    <div 
+                      className={`flex items-center gap-1 text-xs px-2 py-1 rounded whitespace-nowrap cursor-pointer hover:opacity-80 ${priorityColors[priority]}`}
+                      onClick={() => setEditingPriority(project.id)}
+                      title="点击编辑优先级"
+                    >
+                      {priorityIcons[priority]}
+                      <span className="hidden xs:inline">{priorityLabels[priority]}</span>
+                      <span className="xs:hidden">
+                        {priority === 'small-earning' ? '小赚钱' :
+                         priority === 'small-potential' ? '可赚钱' :
+                         priority === 'small-hobby' ? '爱好' :
+                         priority === 'earning' ? '赚钱' : '努力中'}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="px-4 pb-4">

@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
       tags: task.tags,
       deadline: task.deadline,
       taskType: task.taskType,
+      dependencies: task.dependencies || [],
       project: task.project ? {
         name: task.project.name,
         duration: task.project.duration,
@@ -140,6 +141,9 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
 7. **番茄工作法**：尽量将任务安排为30分钟的工作块，每个工作块后安排5分钟休息
    - 如果任务需要1小时，可以拆分为2个30分钟的番茄钟
    - 休息时间请明确标注为"break"类型
+8. **任务依赖**：注意任务的dependencies字段，被依赖的任务必须先完成
+   - 如果任务A依赖任务B（A.dependencies包含B的ID），则B必须在A之前安排
+   - 确保依赖链的正确顺序
 
 返回JSON格式（timeSlot格式必须是HH:mm-HH:mm）：
 {
