@@ -95,6 +95,12 @@ export async function POST(request: NextRequest) {
     const currentMinute = startTime.getMinutes()
     const actualStartTime = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`
     
+    console.log('=== 时间校正调试 ===')
+    console.log('传入的body.startTime:', body.startTime)
+    console.log('解析后的startTime对象:', startTime)
+    console.log('提取的actualStartTime:', actualStartTime)
+    console.log('==================')
+    
     // 简化版提示词，避免长度过长导致API失败
     const prompt = `作为时间管理专家，生成今日工作计划。
 
@@ -162,12 +168,15 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
       if (!schedule || schedule.length === 0) return []
       
       let currentTime = new Date(startTime)
+      console.log('开始时间校正，起始时间:', formatTime(currentTime))
       
       return schedule.map((item: any, index: number) => {
         const duration = calculateDuration(item.timeSlot, item.type)
         const nextTime = new Date(currentTime.getTime() + duration * 60000) // 分钟转毫秒
         
         const correctedTimeSlot = `${formatTime(currentTime)}-${formatTime(nextTime)}`
+        console.log(`任务${index + 1}: 原时间=${item.timeSlot}, 校正后=${correctedTimeSlot}, 时长=${duration}分钟`)
+        
         currentTime = nextTime
         
         return {
