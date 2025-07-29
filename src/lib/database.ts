@@ -409,19 +409,24 @@ export const industryService = {
 
   async create(industry: Omit<Industry, 'id' | 'createdAt' | 'updatedAt'>): Promise<Industry> {
     const userId = getCurrentUserId()
+    console.log('Creating industry with userId:', userId, 'data:', industry)
+    
     const { data, error } = await supabase
       .from('industries')
       .insert({
         user_id: userId,
         name: industry.name,
-        description: industry.description,
+        description: industry.description || null,
         color: industry.color,
         icon: industry.icon
       })
       .select()
       .single()
     
-    if (error) throw error
+    if (error) {
+      console.error('Failed to create industry:', error)
+      throw error
+    }
     return {
       id: data.id,
       name: data.name,
