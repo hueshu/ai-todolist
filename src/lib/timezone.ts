@@ -1,46 +1,54 @@
-// 时区工具函数 - 统一使用东八区（北京时间）
+// 时区工具函数 - 统一使用东八区（北京时间 UTC+8）
 
 /**
  * 获取当前北京时间
+ * 使用最简单直接的方法确保准确性
  */
 export function getBeijingTime(): Date {
+  // 获取当前UTC时间的毫秒数
   const now = new Date()
-  // 获取UTC时间然后加8小时
-  const utc = now.getTime() + (now.getTimezoneOffset() * 60000)
-  const beijingTime = new Date(utc + (8 * 3600000))
+  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000)
+  // 加上8小时（北京时间 = UTC + 8小时）
+  const beijingTime = new Date(utcTime + (8 * 3600000))
   return beijingTime
 }
 
 /**
- * 将UTC时间转换为北京时间显示
+ * 将任意日期转换为北京时间显示
  */
 export function toBeijingTime(date: Date | string): Date {
   const inputDate = typeof date === 'string' ? new Date(date) : date
-  // 如果已经是北京时间格式，直接返回
-  return inputDate
+  return new Date(inputDate.toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }))
 }
 
 /**
  * 格式化北京时间为字符串
  */
 export function formatBeijingTime(date: Date | string, format: 'date' | 'datetime' | 'time' = 'datetime'): string {
-  const beijingDate = toBeijingTime(date)
+  const inputDate = typeof date === 'string' ? new Date(date) : date
   
-  const year = beijingDate.getFullYear()
-  const month = String(beijingDate.getMonth() + 1).padStart(2, '0')
-  const day = String(beijingDate.getDate()).padStart(2, '0')
-  const hours = String(beijingDate.getHours()).padStart(2, '0')
-  const minutes = String(beijingDate.getMinutes()).padStart(2, '0')
-  const seconds = String(beijingDate.getSeconds()).padStart(2, '0')
+  // 使用北京时区格式化
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: 'Asia/Shanghai',
+    hour12: false
+  }
   
   switch (format) {
     case 'date':
-      return `${year}-${month}-${day}`
+      return inputDate.toLocaleDateString('zh-CN', { ...options, year: 'numeric', month: '2-digit', day: '2-digit' })
     case 'time':
-      return `${hours}:${minutes}`
+      return inputDate.toLocaleTimeString('zh-CN', { ...options, hour: '2-digit', minute: '2-digit' })
     case 'datetime':
     default:
-      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+      return inputDate.toLocaleString('zh-CN', { 
+        ...options, 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit' 
+      })
   }
 }
 
@@ -49,7 +57,9 @@ export function formatBeijingTime(date: Date | string, format: 'date' | 'datetim
  */
 export function getBeijingTodayStart(): Date {
   const beijing = getBeijingTime()
-  return new Date(beijing.getFullYear(), beijing.getMonth(), beijing.getDate(), 0, 0, 0, 0)
+  const start = new Date(beijing)
+  start.setHours(0, 0, 0, 0)
+  return start
 }
 
 /**
@@ -57,23 +67,31 @@ export function getBeijingTodayStart(): Date {
  */
 export function getBeijingTodayEnd(): Date {
   const beijing = getBeijingTime()
-  return new Date(beijing.getFullYear(), beijing.getMonth(), beijing.getDate(), 23, 59, 59, 999)
+  const end = new Date(beijing)
+  end.setHours(23, 59, 59, 999)
+  return end
 }
 
 /**
  * 检查日期是否为北京时间的今天
  */
 export function isBeijingToday(date: Date | string): boolean {
-  const targetDate = toBeijingTime(date)
+  if (!date) return false
+  
+  const inputDate = typeof date === 'string' ? new Date(date) : date
   const today = getBeijingTime()
   
-  return targetDate.getFullYear() === today.getFullYear() &&
-         targetDate.getMonth() === today.getMonth() &&
-         targetDate.getDate() === today.getDate()
+  // 在北京时区比较年月日
+  const inputBeijing = new Date(inputDate.toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }))
+  const todayBeijing = new Date(today.toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }))
+  
+  return inputBeijing.getFullYear() === todayBeijing.getFullYear() &&
+         inputBeijing.getMonth() === todayBeijing.getMonth() &&
+         inputBeijing.getDate() === todayBeijing.getDate()
 }
 
 /**
- * 将本地时间转换为UTC时间字符串（用于数据库存储）
+ * 将北京时间转换为UTC时间字符串（用于数据库存储）
  */
 export function toUTCString(beijingDate: Date): string {
   // 北京时间减去8小时得到UTC时间
@@ -87,6 +105,21 @@ export function toUTCString(beijingDate: Date): string {
 export function fromUTCString(utcString: string): Date {
   const utcDate = new Date(utcString)
   // UTC时间加8小时得到北京时间
-  const beijingTime = new Date(utcDate.getTime() + (8 * 3600000))
-  return beijingTime
+  return new Date(utcDate.getTime() + (8 * 3600000))
+}
+
+/**
+ * 获取北京时间字符串（用于显示）
+ */
+export function getBeijingTimeString(): string {
+  return new Date().toLocaleString('zh-CN', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  })
 }
