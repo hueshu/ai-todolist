@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { Task, Project, FixedEvent } from '@/types'
+import { Task, Project, FixedEvent, Industry } from '@/types'
 import { getBeijingTime, toUTCString, fromUTCString } from './timezone'
 
 // 获取当前用户ID (简化版，后续可以换成真正的认证)
@@ -384,3 +384,96 @@ export const getFixedEvents = fixedEventService.getAll
 export const createFixedEvent = fixedEventService.create
 export const updateFixedEvent = fixedEventService.update
 export const deleteFixedEvent = fixedEventService.delete
+
+// 行业相关操作
+export const industryService = {
+  async getAll(): Promise<Industry[]> {
+    const userId = getCurrentUserId()
+    const { data, error } = await supabase
+      .from('industries')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return data?.map(row => ({
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      color: row.color,
+      icon: row.icon,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at)
+    })) || []
+  },
+
+  async create(industry: Omit<Industry, 'id' | 'createdAt' | 'updatedAt'>): Promise<Industry> {
+    const userId = getCurrentUserId()
+    const { data, error } = await supabase
+      .from('industries')
+      .insert({
+        user_id: userId,
+        name: industry.name,
+        description: industry.description,
+        color: industry.color,
+        icon: industry.icon
+      })
+      .select()
+      .single()
+    
+    if (error) throw error
+    return {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      color: data.color,
+      icon: data.icon,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at)
+    }
+  },
+
+  async update(id: string, updates: Partial<Industry>): Promise<Industry> {
+    const userId = getCurrentUserId()
+    const { data, error } = await supabase
+      .from('industries')
+      .update({
+        name: updates.name,
+        description: updates.description,
+        color: updates.color,
+        icon: updates.icon,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      color: data.color,
+      icon: data.icon,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at)
+    }
+  },
+
+  async delete(id: string): Promise<void> {
+    const userId = getCurrentUserId()
+    const { error } = await supabase
+      .from('industries')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId)
+    
+    if (error) throw error
+  }
+}
+
+export const getIndustries = industryService.getAll
+export const createIndustry = industryService.create
+export const updateIndustry = industryService.update
+export const deleteIndustry = industryService.delete

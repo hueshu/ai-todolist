@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { useStore } from '@/lib/store'
-import { v4 as uuidv4 } from 'uuid'
 import { Industry } from '@/types'
 import { 
   Building2, 
@@ -70,32 +69,33 @@ export function IndustryManager({ onBack }: IndustryManagerProps) {
   const updateIndustry = useStore((state) => state.updateIndustry)
   const deleteIndustry = useStore((state) => state.deleteIndustry)
   
-  const handleCreateIndustry = () => {
+  const handleCreateIndustry = async () => {
     if (!newIndustry.name.trim()) return
     
-    const industry: Industry = {
-      id: uuidv4(),
-      name: newIndustry.name,
-      description: newIndustry.description,
-      color: newIndustry.color,
-      icon: newIndustry.icon,
-      createdAt: new Date(),
-      updatedAt: new Date()
+    try {
+      if (editingIndustry) {
+        await updateIndustry(editingIndustry.id, {
+          name: newIndustry.name,
+          description: newIndustry.description,
+          color: newIndustry.color,
+          icon: newIndustry.icon
+        })
+        setEditingIndustry(null)
+      } else {
+        await addIndustry({
+          name: newIndustry.name,
+          description: newIndustry.description,
+          color: newIndustry.color,
+          icon: newIndustry.icon
+        })
+      }
+      
+      setNewIndustry({ name: '', description: '', color: industryColors[0], icon: 'building2' })
+      setIsCreating(false)
+    } catch (error) {
+      console.error('Failed to save industry:', error)
+      alert('保存行业失败，请重试')
     }
-    
-    if (editingIndustry) {
-      updateIndustry(editingIndustry.id, {
-        ...industry,
-        id: editingIndustry.id,
-        createdAt: editingIndustry.createdAt
-      })
-      setEditingIndustry(null)
-    } else {
-      addIndustry(industry)
-    }
-    
-    setNewIndustry({ name: '', description: '', color: industryColors[0], icon: 'building2' })
-    setIsCreating(false)
   }
   
   const startEditIndustry = (industry: Industry) => {

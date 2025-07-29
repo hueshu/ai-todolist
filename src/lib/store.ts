@@ -12,7 +12,11 @@ import {
   getFixedEvents,
   createFixedEvent,
   updateFixedEvent as dbUpdateFixedEvent,
-  deleteFixedEvent as dbDeleteFixedEvent
+  deleteFixedEvent as dbDeleteFixedEvent,
+  getIndustries,
+  createIndustry as dbCreateIndustry,
+  updateIndustry as dbUpdateIndustry,
+  deleteIndustry as dbDeleteIndustry
 } from './database'
 
 interface AppState {
@@ -44,10 +48,11 @@ interface AppState {
   updateProject: (id: string, updates: Partial<Project>) => Promise<void>
   deleteProject: (id: string) => Promise<void>
   
-  // 行业操作（本地保存）
-  addIndustry: (industry: Industry) => void
-  updateIndustry: (id: string, updates: Partial<Industry>) => void
-  deleteIndustry: (id: string) => void
+  // 行业操作
+  loadIndustries: () => Promise<void>
+  addIndustry: (industry: Omit<Industry, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>
+  updateIndustry: (id: string, updates: Partial<Industry>) => Promise<void>
+  deleteIndustry: (id: string) => Promise<void>
   
   // 固定事件操作
   addFixedEvent: (event: Omit<FixedEvent, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>
@@ -110,11 +115,12 @@ export const useStore = create<AppState>((set, get) => ({
   },
   
   loadAll: async () => {
-    const { loadTasks, loadProjects, loadFixedEvents } = get()
+    const { loadTasks, loadProjects, loadFixedEvents, loadIndustries } = get()
     await Promise.all([
       loadTasks(),
       loadProjects(), 
-      loadFixedEvents()
+      loadFixedEvents(),
+      loadIndustries()
     ])
   },
   
@@ -196,23 +202,56 @@ export const useStore = create<AppState>((set, get) => ({
     }
   },
   
-  // 行业操作（本地保存）
-  addIndustry: (industry) => set((state) => ({ 
-    industries: [...state.industries, industry] 
-  })),
+  // 行业操作
+  loadIndustries: async () => {
+    try {
+      const industries = await getIndustries()
+      set({ industries })
+    } catch (error) {
+      console.error('Failed to load industries:', error)
+    }
+  },
+
+  addIndustry: async (industry) => {
+    try {
+      const newIndustry = await dbCreateIndustry(industry)
+      set((state) => ({ 
+        industries: [...state.industries, newIndustry] 
+      }))
+    } catch (error) {
+      console.error('Failed to create industry:', error)
+      throw error
+    }
+  },
   
-  updateIndustry: (id, updates) => set((state) => ({
-    industries: state.industries.map((industry) =>
-      industry.id === id ? { ...industry, ...updates } : industry
-    ),
-  })),
+  updateIndustry: async (id, updates) => {
+    try {
+      const updatedIndustry = await dbUpdateIndustry(id, updates)
+      set((state) => ({
+        industries: state.industries.map((industry) =>
+          industry.id === id ? updatedIndustry : industry
+        ),
+      }))
+    } catch (error) {
+      console.error('Failed to update industry:', error)
+      throw error
+    }
+  },
   
-  deleteIndustry: (id) => set((state) => ({
-    industries: state.industries.filter((industry) => industry.id !== id),
-    projects: state.projects.map((project) =>
-      project.industryId === id ? { ...project, industryId: undefined } : project
-    ),
-  })),
+  deleteIndustry: async (id) => {
+    try {
+      await dbDeleteIndustry(id)
+      set((state) => ({
+        industries: state.industries.filter((industry) => industry.id !== id),
+        projects: state.projects.map((project) =>
+          project.industryId === id ? { ...project, industryId: undefined } : project
+        ),
+      }))
+    } catch (error) {
+      console.error('Failed to delete industry:', error)
+      throw error
+    }
+  },
   
   // 固定事件操作
   addFixedEvent: async (eventData) => {
