@@ -101,20 +101,10 @@ export function TaskInput() {
             placeholder="输入任务内容，支持自然语言..."
             className="flex-1 h-11 sm:h-12 text-sm sm:text-base rounded-xl border-blue-200 focus:border-blue-400 focus:ring-blue-200"
           />
-          <div className="flex gap-2">
-            <Button 
-              type="button" 
-              variant="outline"
-              onClick={handleAIAnalysis}
-              disabled={isAnalyzing}
-              className="flex-1 sm:flex-none h-11 sm:h-12 px-4 sm:px-6 rounded-xl border-blue-200 hover:bg-blue-50 transition-all text-sm"
-            >
-              <Brain className="w-4 h-4 mr-1 sm:mr-2" />
-              {isAnalyzing ? '分析中...' : 'AI分析'}
-            </Button>
+          <div className="flex justify-end">
             <Button 
               type="submit" 
-              className="flex-1 sm:flex-none h-11 sm:h-12 px-4 sm:px-6 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg text-sm"
+              className="w-full sm:w-auto h-11 sm:h-12 px-4 sm:px-6 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg text-sm"
             >
               添加任务
             </Button>

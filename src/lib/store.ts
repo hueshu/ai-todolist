@@ -69,7 +69,7 @@ export const useStore = create<AppState>((set, get) => ({
   preferences: {
     workStyle: 'balanced',
     focusBlocks: 3,
-    breakFrequency: 60,
+    breakFrequency: 30,
   },
   
   // 数据加载

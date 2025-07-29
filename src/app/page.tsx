@@ -8,7 +8,6 @@ import { ProjectManager } from '@/components/ProjectManager'
 import { CalendarView } from '@/components/CalendarView'
 import { AIAssistant } from '@/components/AIAssistant'
 import { FixedEventManager } from '@/components/FixedEventManager'
-import { TestFixedEvents } from '@/components/TestFixedEvents'
 import { DatabaseTest } from '@/components/DatabaseTest'
 import { useDataLoader } from '@/hooks/useDataLoader'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -202,10 +201,7 @@ export default function Home() {
                 <h2 className="text-lg sm:text-2xl font-bold text-gray-800">固定事件</h2>
               </div>
               <div className="space-y-3 sm:space-y-6">
-                <TestFixedEvents />
-                <div className="border-t border-gray-200 pt-4 sm:pt-6">
-                  <FixedEventManager />
-                </div>
+                <FixedEventManager />
               </div>
             </div>
           </TabsContent>

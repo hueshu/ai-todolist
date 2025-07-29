@@ -14,8 +14,7 @@ export function AIAssistant() {
   const [message, setMessage] = useState('')
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false)
   const [dailyPlan, setDailyPlan] = useState<DailyPlanResponse | null>(null)
-  const [availableHours, setAvailableHours] = useState(8)
-  const [workEndTime, setWorkEndTime] = useState('18:00')
+  const [workEndTime, setWorkEndTime] = useState('20:00')
   
   const tasks = useStore((state) => state.tasks)
   const projects = useStore((state) => state.projects)
@@ -88,7 +87,7 @@ export function AIAssistant() {
           startTime: now, // 添加起始时间
           startTimeString: startTimeString, // 直接传递时间字符串
           workEndTime: workEndTime, // 添加停止工作时间
-          availableHours: availableHours,
+          availableHours: 8, // 固定为8小时
           existingTasks: tasksWithProjectInfo,
           projects: projects,
           fixedEvents: fixedEvents,
@@ -185,48 +184,9 @@ export function AIAssistant() {
               </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm">
-              <div className="text-center">
-                <p className="text-muted-foreground mb-1">可用时间</p>
-                <div className="flex items-center justify-center gap-1">
-                  <Input
-                    type="number"
-                    value={availableHours}
-                    onChange={(e) => setAvailableHours(Number(e.target.value))}
-                    className="w-12 sm:w-16 h-6 sm:h-8 text-xs sm:text-sm text-center"
-                    min="1"
-                    max="12"
-                  />
-                  <span className="text-xs sm:text-sm">h</span>
-                </div>
-              </div>
-              <div className="text-center">
-                <p className="text-muted-foreground mb-1">工作风格</p>
-                <select
-                  value={preferences.workStyle}
-                  onChange={(e) => updatePreferences({ workStyle: e.target.value as any })}
-                  className="text-xs sm:text-sm border rounded px-1 sm:px-2 py-1 w-full"
-                >
-                  <option value="morning-person">早起型</option>
-                  <option value="night-owl">夜猫子</option>
-                  <option value="balanced">平衡型</option>
-                </select>
-              </div>
-              <div className="text-center">
-                <p className="text-muted-foreground mb-1">休息频率</p>
-                <div className="flex items-center justify-center gap-1">
-                  <Input
-                    type="number"
-                    value={preferences.breakFrequency}
-                    onChange={(e) => updatePreferences({ breakFrequency: Number(e.target.value) })}
-                    className="w-12 sm:w-16 h-6 sm:h-8 text-xs sm:text-sm text-center"
-                    min="30"
-                    max="120"
-                    step="15"
-                  />
-                  <span className="text-xs sm:text-sm">分</span>
-                </div>
-              </div>
+            <div className="text-center">
+              <p className="text-muted-foreground mb-1">每{preferences.breakFrequency}分钟休息一次</p>
+              <p className="text-xs text-gray-500">工作时间: 当前时间 - {workEndTime}</p>
             </div>
             
             
