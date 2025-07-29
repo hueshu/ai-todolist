@@ -23,20 +23,23 @@ export function TaskInput() {
     e.preventDefault()
     if (!input.trim()) return
 
-    const newTask: Task = {
-      id: uuidv4(),
+    const newTaskData = {
       title: input,
       priority: priority,
       estimatedHours: estimatedHours,
       projectId: projectId || undefined,
-      status: 'pool',
+      status: 'pool' as const,
       tags: [],
       taskType: taskType,
-      createdAt: new Date(),
     }
 
-    addTask(newTask)
-    resetForm()
+    try {
+      await addTask(newTaskData)
+      resetForm()
+    } catch (error) {
+      console.error('Failed to add task:', error)
+      // 可以添加错误提示
+    }
   }
   
   const resetForm = () => {

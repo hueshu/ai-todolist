@@ -52,38 +52,48 @@ export function ProjectManager() {
     p.priority
   )
   
-  const handleCreateProject = () => {
+  const handleCreateProject = async () => {
     if (!newProject.name.trim()) return
     
-    const project: Project = {
-      id: uuidv4(),
-      name: newProject.name,
-      description: newProject.description,
-      industryId: newProject.industryId || undefined,
-      duration: newProject.duration,
-      priority: newProject.priority,
-      status: 'active',
-      weeklyGoals: [],
-      milestones: [],
-      createdAt: new Date(),
-      updatedAt: new Date()
+    try {
+      if (editingProject) {
+        await updateProject(editingProject.id, {
+          name: newProject.name,
+          description: newProject.description,
+          industryId: newProject.industryId || undefined,
+          duration: newProject.duration,
+          priority: newProject.priority,
+        })
+        setEditingProject(null)
+      } else {
+        const projectData = {
+          name: newProject.name,
+          description: newProject.description,
+          industryId: newProject.industryId || undefined,
+          duration: newProject.duration,
+          priority: newProject.priority,
+          status: 'active' as const,
+          weeklyGoals: [],
+          milestones: [],
+        }
+        await addProject(projectData)
+      }
+      
+      setNewProject({ name: '', description: '', duration: 30, priority: 'small-potential', industryId: '' })
+      setIsCreating(false)
+    } catch (error) {
+      console.error('Failed to save project:', error)
     }
-    
-    if (editingProject) {
-      updateProject(editingProject.id, {
-        ...project,
-        id: editingProject.id,
-        createdAt: editingProject.createdAt
-      })
-      setEditingProject(null)
-    } else {
-      addProject(project)
-    }
-    
-    setNewProject({ name: '', description: '', duration: 30, priority: 'small-potential', industryId: '' })
-    setIsCreating(false)
   }
   
+  const handleDeleteProject = async (id: string) => {
+    try {
+      await deleteProject(id)
+    } catch (error) {
+      console.error('Failed to delete project:', error)
+    }
+  }
+
   const startEditProject = (project: Project) => {
     setEditingProject(project)
     setNewProject({
@@ -210,7 +220,7 @@ export function ProjectManager() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => deleteProject(project.id)}
+                        onClick={() => handleDeleteProject(project.id)}
                         className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="w-4 h-4 mr-1" />

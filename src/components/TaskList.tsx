@@ -35,6 +35,23 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
   const updateTask = useStore((state) => state.updateTask)
   const deleteTask = useStore((state) => state.deleteTask)
 
+  // 异步包装函数
+  const handleUpdateTask = async (id: string, updates: Partial<Task>) => {
+    try {
+      await handleUpdateTask(id, updates)
+    } catch (error) {
+      console.error('Failed to update task:', error)
+    }
+  }
+
+  const handleDeleteTask = async (id: string) => {
+    try {
+      await handleDeleteTask(id)
+    } catch (error) {
+      console.error('Failed to delete task:', error)
+    }
+  }
+
   const filteredTasks = tasks.filter(task => {
     if (filter === 'all') return true
     if (filter === 'pool') return task.status === 'pool'
@@ -51,7 +68,7 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
         setCompletingTask(task)
       } else {
         // 取消完成状态
-        updateTask(taskId, {
+        handleUpdateTask(taskId, {
           status: 'pool',
           completedAt: undefined,
           actualHours: undefined
@@ -86,18 +103,18 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
   
   const batchDelete = () => {
     if (confirm(`确定要删除 ${selectedTasks.length} 个任务吗？`)) {
-      selectedTasks.forEach(id => deleteTask(id))
+      selectedTasks.forEach(id => handleDeleteTask(id))
       clearSelection()
     }
   }
   
   const batchUpdateStatus = (status: Task['status']) => {
-    selectedTasks.forEach(id => updateTask(id, { status }))
+    selectedTasks.forEach(id => handleUpdateTask(id, { status }))
     clearSelection()
   }
   
   const batchUpdatePriority = (priority: Task['priority']) => {
-    selectedTasks.forEach(id => updateTask(id, { priority }))
+    selectedTasks.forEach(id => handleUpdateTask(id, { priority }))
     clearSelection()
   }
 
@@ -243,7 +260,7 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => updateTask(task.id, { status: 'scheduled' })}
+                      onClick={() => handleUpdateTask(task.id, { status: 'scheduled' })}
                     >
                       安排
                     </Button>
@@ -253,7 +270,7 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
                     size="icon"
                     onClick={() => {
                       if (window.confirm(`确定要删除任务"${task.title}"吗？此操作无法撤销。`)) {
-                        deleteTask(task.id)
+                        handleDeleteTask(task.id)
                       }
                     }}
                     className="text-destructive hover:text-destructive"
@@ -273,7 +290,7 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
           task={editingTask}
           onClose={() => setEditingTask(null)}
           onSave={(updatedTask) => {
-            updateTask(updatedTask.id, updatedTask)
+            handleUpdateTask(updatedTask.id, updatedTask)
             setEditingTask(null)
           }}
         />
@@ -284,7 +301,7 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
           task={completingTask}
           onClose={() => setCompletingTask(null)}
           onSubmit={(feedback) => {
-            updateTask(completingTask.id, {
+            handleUpdateTask(completingTask.id, {
               status: 'completed',
               completedAt: new Date(),
               actualHours: feedback.actualHours
