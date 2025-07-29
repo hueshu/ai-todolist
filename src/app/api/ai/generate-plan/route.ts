@@ -90,11 +90,17 @@ export async function POST(request: NextRequest) {
     const todayFixedEvents = formatFixedEventsForPrompt(body.fixedEvents || [], requestDate)
     
     // 获取当前时间或指定的开始时间
-    const startTime = body.startTime ? new Date(body.startTime) : new Date()
+    const startTime = body.startTime ? new Date(body.startTime) : getBeijingTime()
     // 确保使用本地时间（北京时间）
     const currentHour = startTime.getHours()
     const currentMinute = startTime.getMinutes()
     const actualStartTime = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`
+    
+    // 添加时区调试信息
+    console.log('[时区信息] 环境变量TZ:', process.env.TZ)
+    console.log('[时区信息] 开始时间:', startTime.toISOString())
+    console.log('[时区信息] 本地时间字符串:', startTime.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }))
+    console.log('[时区信息] 实际开始时间:', actualStartTime)
     
     
     // 解析停止工作时间

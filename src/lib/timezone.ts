@@ -5,8 +5,29 @@
  * 使用最简单直接的方法确保准确性
  */
 export function getBeijingTime(): Date {
-  // 直接返回当前时间，因为系统已经在北京时区
-  return new Date()
+  // 获取当前时间
+  const now = new Date()
+  
+  // 如果环境变量TZ已设置为Asia/Shanghai，直接返回
+  if (process.env.TZ === 'Asia/Shanghai') {
+    return now
+  }
+  
+  // 否则手动计算北京时间
+  // 获取本地时间与UTC的差值（分钟）
+  const offset = now.getTimezoneOffset()
+  // 北京时间是UTC+8，即480分钟
+  const beijingOffset = -480
+  // 计算需要调整的分钟数
+  const diff = beijingOffset - (-offset)
+  
+  // 如果已经是北京时间，直接返回
+  if (diff === 0) {
+    return now
+  }
+  
+  // 调整时间
+  return new Date(now.getTime() + diff * 60000)
 }
 
 /**
