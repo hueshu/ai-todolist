@@ -122,7 +122,16 @@ export function ProjectPrioritySort({ onBack }: ProjectPrioritySortProps) {
     const activeProjects = projects
       .filter(p => p.status === 'active')
       .sort((a, b) => {
-        // 根据优先级预设顺序排序
+        // 优先使用 displayOrder，如果没有则使用默认优先级顺序
+        if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
+          return a.displayOrder - b.displayOrder
+        }
+        
+        // 如果只有一个有 displayOrder
+        if (a.displayOrder !== undefined) return -1
+        if (b.displayOrder !== undefined) return 1
+        
+        // 都没有 displayOrder，使用优先级预设顺序
         const priorityOrder = {
           'earning': 0,
           'working-on-earning': 1,
@@ -172,22 +181,13 @@ export function ProjectPrioritySort({ onBack }: ProjectPrioritySortProps) {
   }
 
   const handleSave = async () => {
-    // 根据新的排序顺序更新项目优先级
-    const priorityMapping = [
-      'earning',
-      'working-on-earning',
-      'small-earning',
-      'small-potential',
-      'small-hobby'
-    ] as const
-
-    // 为每个项目分配新的优先级
+    // 为每个项目更新 displayOrder
     for (let i = 0; i < sortedProjects.length; i++) {
       const project = sortedProjects[i]
-      const newPriority = priorityMapping[Math.min(i, priorityMapping.length - 1)]
       
-      if (project.priority !== newPriority) {
-        await updateProject(project.id, { priority: newPriority })
+      // 只有当 displayOrder 改变时才更新
+      if (project.displayOrder !== i) {
+        await updateProject(project.id, { displayOrder: i })
       }
     }
     
@@ -224,15 +224,16 @@ export function ProjectPrioritySort({ onBack }: ProjectPrioritySortProps) {
         </CardHeader>
         <CardContent>
           <div className="text-sm text-gray-600 space-y-2">
-            <p>• 拖拽项目卡片来调整顺序</p>
+            <p>• 拖拽项目卡片来调整显示顺序</p>
             <p>• 或者直接修改序号（输入后按回车或点击其他地方）</p>
-            <p>• 排序越靠前，优先级越高：</p>
+            <p>• <strong>注意：</strong>这只会改变项目的显示顺序，不会改变项目类型</p>
+            <p>• 项目类型保持不变：</p>
             <div className="ml-4 space-y-1 text-xs">
-              <p>1. 项目赚钱（最高优先级）</p>
-              <p>2. 项目正在努力实现赚钱</p>
-              <p>3. 小项目在赚钱</p>
-              <p>4. 小项目可能赚钱</p>
-              <p>5. 小项目是爱好（最低优先级）</p>
+              <p>- 项目赚钱</p>
+              <p>- 项目正在努力实现赚钱</p>
+              <p>- 小项目在赚钱</p>
+              <p>- 小项目可能赚钱</p>
+              <p>- 小项目是爱好</p>
             </div>
           </div>
         </CardContent>

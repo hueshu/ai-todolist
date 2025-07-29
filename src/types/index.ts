@@ -25,6 +25,7 @@ export interface Project {
   duration: number; // 项目周期（天数）
   priority: 'small-earning' | 'small-potential' | 'small-hobby' | 'earning' | 'working-on-earning';
   status: 'active' | 'completed' | 'archived';
+  displayOrder?: number; // 显示顺序，用于自定义排序
   weeklyGoals: string[];
   milestones: Milestone[];
   createdAt: Date;

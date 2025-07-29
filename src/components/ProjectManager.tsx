@@ -35,15 +35,36 @@ export function ProjectManager() {
   const updateProject = useStore((state) => state.updateProject)
   const deleteProject = useStore((state) => state.deleteProject)
   
-  // 安全过滤，确保项目数据完整
-  const activeProjects = projects.filter(p => 
-    p && 
-    p.status === 'active' && 
-    p.id && 
-    p.name &&
-    p.duration !== undefined &&
-    p.priority
-  )
+  // 安全过滤并排序，确保项目数据完整
+  const activeProjects = projects
+    .filter(p => 
+      p && 
+      p.status === 'active' && 
+      p.id && 
+      p.name &&
+      p.duration !== undefined &&
+      p.priority
+    )
+    .sort((a, b) => {
+      // 优先使用 displayOrder，如果没有则使用默认优先级顺序
+      if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
+        return a.displayOrder - b.displayOrder
+      }
+      
+      // 如果只有一个有 displayOrder
+      if (a.displayOrder !== undefined) return -1
+      if (b.displayOrder !== undefined) return 1
+      
+      // 都没有 displayOrder，使用优先级预设顺序
+      const priorityOrder = {
+        'earning': 0,
+        'working-on-earning': 1,
+        'small-earning': 2,
+        'small-potential': 3,
+        'small-hobby': 4
+      }
+      return priorityOrder[a.priority] - priorityOrder[b.priority]
+    })
   
   const archivedProjects = projects.filter(p => 
     p && 
