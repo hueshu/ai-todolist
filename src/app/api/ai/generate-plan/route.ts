@@ -98,6 +98,8 @@ export async function POST(request: NextRequest) {
     console.log('=== 时间校正调试 ===')
     console.log('传入的body.startTime:', body.startTime)
     console.log('解析后的startTime对象:', startTime)
+    console.log('startTime.getHours():', startTime.getHours())
+    console.log('startTime.getMinutes():', startTime.getMinutes())
     console.log('提取的actualStartTime:', actualStartTime)
     console.log('==================')
     
@@ -238,6 +240,14 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
       const endMin = taskEndTime.getMinutes().toString().padStart(2, '0')
       
       const correctedTimeSlot = `${startHour}:${startMin}-${endHour}:${endMin}`
+      
+      if (index === 0) {
+        console.log('第一个任务的时间校正:')
+        console.log('  - startTime:', startTime)
+        console.log('  - taskStartTime:', taskStartTime)
+        console.log('  - 原始时间段:', item.timeSlot)
+        console.log('  - 校正后时间段:', correctedTimeSlot)
+      }
       
       return {
         ...item,

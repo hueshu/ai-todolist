@@ -37,6 +37,9 @@ export function AIAssistant() {
       
       // 在点击按钮时获取当前北京时间作为起始时间点
       const now = getBeijingTime()
+      console.log('点击时的北京时间:', now)
+      console.log('时间小时:', now.getHours())
+      console.log('时间分钟:', now.getMinutes())
       
       // 构建包含项目信息的任务数据
       const tasksWithProjectInfo = poolTasks.map(task => {
@@ -99,6 +102,7 @@ export function AIAssistant() {
       
       const data = await response.json()
       console.log('Received response:', data)
+      console.log('第一个计划时间段:', data.schedule?.[0]?.timeSlot)
       
       if (data.error) {
         throw new Error(data.error)
