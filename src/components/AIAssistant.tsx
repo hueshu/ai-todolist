@@ -5,13 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { useStore } from '@/lib/store'
-import { Sparkles, Send, Calendar, ListTodo, Clock, Coffee, Target } from 'lucide-react'
+import { Sparkles, Calendar, Clock, Coffee, Target } from 'lucide-react'
 import { DailyPlanResponse } from '@/types'
 import { cn } from '@/lib/utils'
 import { getBeijingTime, getBeijingHourMinute } from '@/lib/timezone'
 
 export function AIAssistant() {
-  const [message, setMessage] = useState('')
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false)
   const [dailyPlan, setDailyPlan] = useState<DailyPlanResponse | null>(null)
   const [workEndTime, setWorkEndTime] = useState('20:00')
@@ -296,31 +295,6 @@ export function AIAssistant() {
           </CardContent>
         </Card>
       )}
-      
-      <Card>
-        <CardHeader className="pb-3 sm:pb-6">
-          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <ListTodo className="w-4 h-4 sm:w-5 sm:h-5" />
-            自然语言添加任务
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <form onSubmit={(e) => {
-            e.preventDefault()
-            // 处理自然语言输入
-          }} className="flex gap-2">
-            <Input
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="例如：明天下午3点开会..."
-              className="flex-1 text-sm h-10 sm:h-12"
-            />
-            <Button type="submit" size="sm" className="w-10 h-10 sm:w-12 sm:h-12 shrink-0">
-              <Send className="w-3 h-3 sm:w-4 sm:h-4" />
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
     </div>
   )
 }
