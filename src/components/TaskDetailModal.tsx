@@ -8,6 +8,7 @@ import { Task, Project } from '@/types'
 import { useStore } from '@/lib/store'
 import { X, Save, Calendar, Clock, Tag, FolderOpen, Link } from 'lucide-react'
 import { format } from 'date-fns'
+import { ProjectSelect } from './ProjectSelect'
 
 interface TaskDetailModalProps {
   task: Task | null
@@ -17,6 +18,7 @@ interface TaskDetailModalProps {
 
 export function TaskDetailModal({ task, onClose, onSave }: TaskDetailModalProps) {
   const projects = useStore((state) => state.projects)
+  const industries = useStore((state) => state.industries)
   const tasks = useStore((state) => state.tasks)
   
   const [editedTask, setEditedTask] = useState<Task | null>(null)
@@ -105,18 +107,13 @@ export function TaskDetailModal({ task, onClose, onSave }: TaskDetailModalProps)
                 <FolderOpen className="w-4 h-4" />
                 所属项目
               </label>
-              <select
-                value={editedTask.projectId || ''}
-                onChange={(e) => setEditedTask({ ...editedTask, projectId: e.target.value || undefined })}
-                className="mt-1 w-full p-2 border rounded-md"
-              >
-                <option value="">无</option>
-                {projects.map(project => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
+              <ProjectSelect
+                value={editedTask.projectId}
+                onChange={(value) => setEditedTask({ ...editedTask, projectId: value })}
+                projects={projects}
+                industries={industries}
+                className="mt-1"
+              />
             </div>
             
             <div>

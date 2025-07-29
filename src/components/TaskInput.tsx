@@ -7,6 +7,7 @@ import { useStore } from '@/lib/store'
 import { v4 as uuidv4 } from 'uuid'
 import { Task } from '@/types'
 import { Brain, Clock, ChevronDown, ChevronUp } from 'lucide-react'
+import { ProjectSelect } from './ProjectSelect'
 
 export function TaskInput() {
   const [input, setInput] = useState('')
@@ -18,6 +19,7 @@ export function TaskInput() {
   
   const addTask = useStore((state) => state.addTask)
   const projects = useStore((state) => state.projects)
+  const industries = useStore((state) => state.industries)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -159,18 +161,13 @@ export function TaskInput() {
               </div>
               所属项目
             </label>
-            <select
-              value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
-              className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
-            >
-              <option value="">📋 无项目</option>
-              {projects.map(project => (
-                <option key={project.id} value={project.id}>
-                  📁 {project.name}
-                </option>
-              ))}
-            </select>
+            <ProjectSelect
+              value={projectId || undefined}
+              onChange={(value) => setProjectId(value || '')}
+              projects={projects}
+              industries={industries}
+              className="h-11"
+            />
           </div>
           
           <div>
