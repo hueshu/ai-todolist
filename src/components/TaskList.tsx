@@ -1,0 +1,300 @@
+"use client"
+
+import { useState } from 'react'
+import { useStore } from '@/lib/store'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { CheckCircle2, Circle, Clock, AlertCircle, FolderOpen, Tag, Calendar, Edit2, Trash2, MoreVertical, Link } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { TaskDetailModal } from './TaskDetailModal'
+import { TaskCompletionDialog } from './TaskCompletionDialog'
+import { Task } from '@/types'
+
+const priorityColors = {
+  urgent: 'text-red-500',
+  high: 'text-orange-500',
+  medium: 'text-yellow-500',
+  low: 'text-green-500',
+}
+
+const priorityIcons = {
+  urgent: <AlertCircle className="w-4 h-4" />,
+  high: <AlertCircle className="w-4 h-4" />,
+  medium: <Clock className="w-4 h-4" />,
+  low: <Circle className="w-4 h-4" />,
+}
+
+export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'scheduled' | 'completed' }) {
+  const [selectedTasks, setSelectedTasks] = useState<string[]>([])
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [completingTask, setCompletingTask] = useState<Task | null>(null)
+  const [showBatchActions, setShowBatchActions] = useState(false)
+  
+  const tasks = useStore((state) => state.tasks)
+  const projects = useStore((state) => state.projects)
+  const updateTask = useStore((state) => state.updateTask)
+  const deleteTask = useStore((state) => state.deleteTask)
+
+  const filteredTasks = tasks.filter(task => {
+    if (filter === 'all') return true
+    if (filter === 'pool') return task.status === 'pool'
+    if (filter === 'scheduled') return task.status === 'scheduled'
+    if (filter === 'completed') return task.status === 'completed'
+    return true
+  })
+
+  const toggleTaskStatus = (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId)
+    if (task) {
+      if (task.status !== 'completed') {
+        // 显示完成反馈对话框
+        setCompletingTask(task)
+      } else {
+        // 取消完成状态
+        updateTask(taskId, {
+          status: 'pool',
+          completedAt: undefined,
+          actualHours: undefined
+        })
+      }
+    }
+  }
+
+  const getProject = (projectId?: string) => {
+    if (!projectId) return null
+    return projects.find(p => p.id === projectId)
+  }
+  
+  const toggleTaskSelection = (taskId: string) => {
+    if (selectedTasks.includes(taskId)) {
+      setSelectedTasks(selectedTasks.filter(id => id !== taskId))
+    } else {
+      setSelectedTasks([...selectedTasks, taskId])
+    }
+    setShowBatchActions(true)
+  }
+  
+  const selectAll = () => {
+    setSelectedTasks(filteredTasks.map(t => t.id))
+    setShowBatchActions(true)
+  }
+  
+  const clearSelection = () => {
+    setSelectedTasks([])
+    setShowBatchActions(false)
+  }
+  
+  const batchDelete = () => {
+    if (confirm(`确定要删除 ${selectedTasks.length} 个任务吗？`)) {
+      selectedTasks.forEach(id => deleteTask(id))
+      clearSelection()
+    }
+  }
+  
+  const batchUpdateStatus = (status: Task['status']) => {
+    selectedTasks.forEach(id => updateTask(id, { status }))
+    clearSelection()
+  }
+  
+  const batchUpdatePriority = (priority: Task['priority']) => {
+    selectedTasks.forEach(id => updateTask(id, { priority }))
+    clearSelection()
+  }
+
+  return (
+    <div className="space-y-4">
+      {showBatchActions && selectedTasks.length > 0 && (
+        <div className="p-3 bg-blue-50 rounded-lg flex items-center justify-between">
+          <span className="text-sm">已选择 {selectedTasks.length} 个任务</span>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={clearSelection}>
+              取消选择
+            </Button>
+            <Button size="sm" variant="outline" onClick={selectAll}>
+              全选
+            </Button>
+            <select
+              onChange={(e) => batchUpdateStatus(e.target.value as Task['status'])}
+              className="px-3 py-1 text-sm border rounded"
+              defaultValue=""
+            >
+              <option value="" disabled>批量更新状态</option>
+              <option value="pool">任务池</option>
+              <option value="scheduled">已安排</option>
+              <option value="completed">已完成</option>
+            </select>
+            <select
+              onChange={(e) => batchUpdatePriority(e.target.value as Task['priority'])}
+              className="px-3 py-1 text-sm border rounded"
+              defaultValue=""
+            >
+              <option value="" disabled>批量更新优先级</option>
+              <option value="urgent">紧急</option>
+              <option value="high">高</option>
+              <option value="medium">中</option>
+              <option value="low">低</option>
+            </select>
+            <Button size="sm" variant="destructive" onClick={batchDelete}>
+              批量删除
+            </Button>
+          </div>
+        </div>
+      )}
+      
+      <div className="space-y-2">
+      {filteredTasks.length === 0 ? (
+        <p className="text-center text-muted-foreground py-8">
+          暂无任务，请添加新任务
+        </p>
+      ) : (
+        filteredTasks.map((task) => {
+          const project = getProject(task.projectId)
+          
+          return (
+            <Card key={task.id} className={cn(
+              "hover:shadow-md transition-shadow",
+              selectedTasks.includes(task.id) && "ring-2 ring-blue-500"
+            )}>
+              <CardContent className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3 flex-1">
+                  <input
+                    type="checkbox"
+                    checked={selectedTasks.includes(task.id)}
+                    onChange={() => toggleTaskSelection(task.id)}
+                    className="w-4 h-4"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => toggleTaskStatus(task.id)}
+                    className="shrink-0"
+                  >
+                    {task.status === 'completed' ? (
+                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    ) : (
+                      <Circle className="w-5 h-5" />
+                    )}
+                  </Button>
+                  
+                  <div className="flex-1">
+                    <h3 className={cn(
+                      "font-medium",
+                      task.status === 'completed' && "line-through text-muted-foreground"
+                    )}>
+                      {task.title}
+                    </h3>
+                    {task.description && (
+                      <p className="text-sm text-muted-foreground">{task.description}</p>
+                    )}
+                    <div className="flex items-center gap-4 mt-1 flex-wrap">
+                      <span className={cn("flex items-center gap-1 text-sm", priorityColors[task.priority])}>
+                        {priorityIcons[task.priority]}
+                        {task.priority}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        预计 {task.estimatedHours} 小时
+                      </span>
+                      <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                        {task.taskType === 'daily' ? '🔁 每日任务' : 
+                         task.taskType === 'weekly' ? '📆 每周任务' :
+                         task.taskType === 'monthly' ? '🗓️ 每月任务' : '📅 单次任务'}
+                      </span>
+                      {project && (
+                        <span className="flex items-center gap-1 text-sm text-blue-600">
+                          <FolderOpen className="w-3 h-3" />
+                          {project.name}
+                        </span>
+                      )}
+                      {task.tags.length > 0 && (
+                        <div className="flex items-center gap-1">
+                          <Tag className="w-3 h-3 text-muted-foreground" />
+                          {task.tags.map(tag => (
+                            <span key={tag} className="text-xs bg-gray-100 px-2 py-0.5 rounded">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {task.deadline && (
+                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(task.deadline).toLocaleDateString('zh-CN')}
+                        </span>
+                      )}
+                      {task.dependencies && task.dependencies.length > 0 && (
+                        <span className="flex items-center gap-1 text-sm text-purple-600">
+                          <Link className="w-3 h-3" />
+                          依赖 {task.dependencies.length} 个任务
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setEditingTask(task)}
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </Button>
+                  {task.status === 'pool' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateTask(task.id, { status: 'scheduled' })}
+                    >
+                      安排
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (window.confirm(`确定要删除任务"${task.title}"吗？此操作无法撤销。`)) {
+                        deleteTask(task.id)
+                      }
+                    }}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })
+      )}
+      </div>
+      
+      {editingTask && (
+        <TaskDetailModal
+          task={editingTask}
+          onClose={() => setEditingTask(null)}
+          onSave={(updatedTask) => {
+            updateTask(updatedTask.id, updatedTask)
+            setEditingTask(null)
+          }}
+        />
+      )}
+      
+      {completingTask && (
+        <TaskCompletionDialog
+          task={completingTask}
+          onClose={() => setCompletingTask(null)}
+          onSubmit={(feedback) => {
+            updateTask(completingTask.id, {
+              status: 'completed',
+              completedAt: new Date(),
+              actualHours: feedback.actualHours
+            })
+            // 这里可以保存反馈信息到数据库
+            console.log('Task completion feedback:', feedback)
+            setCompletingTask(null)
+          }}
+        />
+      )}
+    </div>
+  )
+}

@@ -1,0 +1,64 @@
+{
+  "tasks": [
+    {
+      "id": "task-1",
+      "title": "完成项目文档",
+      "description": "整理项目的技术文档和用户手册",
+      "priority": "high",
+      "estimatedHours": 3,
+      "status": "pool",
+      "tags": ["文档", "项目"],
+      "taskType": "single",
+      "createdAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "task-2", 
+      "title": "代码review",
+      "description": "检查新功能的代码质量",
+      "priority": "medium",
+      "estimatedHours": 2,
+      "status": "pool",
+      "tags": ["开发", "质量"],
+      "taskType": "single",
+      "createdAt": "2024-01-15T11:00:00Z"
+    },
+    {
+      "id": "task-3",
+      "title": "每日站会",
+      "priority": "medium",
+      "estimatedHours": 0.5,
+      "status": "pool",
+      "tags": ["会议"],
+      "taskType": "daily",
+      "createdAt": "2024-01-15T09:00:00Z"
+    }
+  ],
+  "projects": [
+    {
+      "id": "project-1",
+      "name": "TodoList应用",
+      "description": "智能任务管理系统",
+      "duration": 30,
+      "priority": "earning",
+      "status": "active",
+      "weeklyGoals": ["完成核心功能", "优化用户体验"],
+      "milestones": [],
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-15T00:00:00Z"
+    }
+  ],
+  "fixedEvents": [
+    {
+      "id": "event-1",
+      "title": "午餐时间",
+      "startTime": "12:00",
+      "endTime": "13:00", 
+      "daysOfWeek": [1, 2, 3, 4, 5],
+      "category": "meal",
+      "color": "#f97316",
+      "isActive": true,
+      "createdAt": "2024-01-15T00:00:00Z",
+      "updatedAt": "2024-01-15T00:00:00Z"
+    }
+  ]
+}
