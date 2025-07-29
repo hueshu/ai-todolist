@@ -95,6 +95,7 @@ export function ProjectPrioritySort({ onBack }: ProjectPrioritySortProps) {
   // 只显示活跃项目，并创建本地排序状态
   const [sortedProjects, setSortedProjects] = useState<Project[]>([])
   const [isInitialized, setIsInitialized] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     // 只在初始化时设置排序
@@ -144,17 +145,26 @@ export function ProjectPrioritySort({ onBack }: ProjectPrioritySortProps) {
         const newOrder = arrayMove(sortedProjects, oldIndex, newIndex)
         setSortedProjects(newOrder)
         
-        // 立即保存新的顺序
-        for (let i = 0; i < newOrder.length; i++) {
-          const project = newOrder[i]
-          if (project.displayOrder !== i) {
-            await updateProject(project.id, { displayOrder: i })
-          }
+        // 显示保存状态
+        setIsSaving(true)
+        
+        try {
+          // 立即保存新的顺序
+          const updatePromises = newOrder.map((project, i) => {
+            // 总是更新 displayOrder，确保保存新的顺序
+            return updateProject(project.id, { displayOrder: i })
+          })
+          
+          // 等待所有更新完成
+          await Promise.all(updatePromises)
+        } catch (error) {
+          console.error('Failed to save order:', error)
+        } finally {
+          setIsSaving(false)
         }
       }
     }
   }
-
 
   return (
     <div className="space-y-4">
@@ -170,6 +180,12 @@ export function ProjectPrioritySort({ onBack }: ProjectPrioritySortProps) {
           </Button>
           <h2 className="text-xl font-semibold">项目优先级排序</h2>
         </div>
+        {isSaving && (
+          <div className="text-sm text-gray-500 flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+            保存中...
+          </div>
+        )}
       </div>
 
       <Card>

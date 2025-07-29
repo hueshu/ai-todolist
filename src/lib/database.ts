@@ -178,6 +178,7 @@ export const projectService = {
       duration: row.duration,
       priority: row.priority,
       status: row.status,
+      displayOrder: row.display_order,
       weeklyGoals: row.weekly_goals,
       milestones: [], // 暂时不支持
       createdAt: fromUTCString(row.created_at),
@@ -227,18 +228,23 @@ export const projectService = {
   },
 
   async update(id: string, updates: Partial<Project>): Promise<Project> {
+    const updateData: any = {
+      updated_at: toUTCString(getBeijingTime()),
+    }
+    
+    // 只更新提供的字段
+    if (updates.name !== undefined) updateData.name = updates.name
+    if (updates.description !== undefined) updateData.description = updates.description || null
+    if (updates.industryId !== undefined) updateData.industry_id = updates.industryId || null
+    if (updates.duration !== undefined) updateData.duration = updates.duration
+    if (updates.priority !== undefined) updateData.priority = updates.priority
+    if (updates.status !== undefined) updateData.status = updates.status
+    if (updates.weeklyGoals !== undefined) updateData.weekly_goals = updates.weeklyGoals
+    if (updates.displayOrder !== undefined) updateData.display_order = updates.displayOrder
+    
     const { data, error } = await supabase
       .from('projects')
-      .update({
-        name: updates.name,
-        description: updates.description || null,
-        industry_id: updates.industryId !== undefined ? updates.industryId : undefined,
-        duration: updates.duration,
-        priority: updates.priority,
-        status: updates.status,
-        weekly_goals: updates.weeklyGoals,
-        updated_at: toUTCString(getBeijingTime()),
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single()
@@ -253,6 +259,7 @@ export const projectService = {
       duration: data.duration,
       priority: data.priority,
       status: data.status,
+      displayOrder: data.display_order,
       weeklyGoals: data.weekly_goals,
       milestones: [],
       createdAt: new Date(data.created_at),
