@@ -9,11 +9,9 @@ export function useDataLoader() {
   const isLoading = useStore((state) => state.isLoading)
 
   useEffect(() => {
-    // 如果没有数据，尝试加载
-    if (tasks.length === 0 && projects.length === 0 && fixedEvents.length === 0 && !isLoading) {
-      console.log('No data found, loading from database...')
-      loadAll().catch(console.error)
-    }
+    // 每次页面加载时都从数据库重新加载数据
+    console.log('Loading data from database...')
+    loadAll().catch(console.error)
   }, []) // 只在组件挂载时运行一次
 
   return {

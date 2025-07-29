@@ -6,16 +6,12 @@ import { getBeijingTime, toUTCString, fromUTCString } from './timezone'
 function getCurrentUserId(): string {
   // 只在客户端运行
   if (typeof window === 'undefined') {
-    return 'server-user-id' // 服务器端返回默认ID
+    return 'default-user' // 服务器端返回默认ID
   }
   
-  // 临时方案：使用设备标识作为用户ID
-  let userId = localStorage.getItem('device-user-id')
-  if (!userId) {
-    userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    localStorage.setItem('device-user-id', userId)
-  }
-  return userId
+  // 临时方案：使用固定用户ID实现跨设备数据同步
+  // 所有用户共享同一个数据空间
+  return 'shared-user-account'
 }
 
 // 任务相关操作
@@ -51,6 +47,8 @@ export const taskService = {
 
   async create(task: Omit<Task, 'id' | 'createdAt'>): Promise<Task> {
     const userId = getCurrentUserId()
+    console.log('Creating task for user:', userId, 'Task:', task.title)
+    
     const { data, error } = await supabase
       .from('tasks')
       .insert({
@@ -72,7 +70,12 @@ export const taskService = {
       .select()
       .single()
     
-    if (error) throw error
+    if (error) {
+      console.error('Failed to create task:', error)
+      throw error
+    }
+    
+    console.log('Task created successfully:', data.id)
     
     return {
       id: data.id,
@@ -174,6 +177,8 @@ export const projectService = {
 
   async create(project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<Project> {
     const userId = getCurrentUserId()
+    console.log('Creating project for user:', userId, 'Project:', project.name)
+    
     const { data, error } = await supabase
       .from('projects')
       .insert({
@@ -188,7 +193,12 @@ export const projectService = {
       .select()
       .single()
     
-    if (error) throw error
+    if (error) {
+      console.error('Failed to create project:', error)
+      throw error
+    }
+    
+    console.log('Project created successfully:', data.id)
     
     return {
       id: data.id,
