@@ -37,20 +37,34 @@ function SortableProjectItem({ project, index, onOrderChange }: SortableProjectI
     opacity: isDragging ? 0.5 : 1,
   }
 
-  const priorityLabels = {
-    'small-earning': '小项目在赚钱',
-    'small-potential': '小项目可能赚钱',
-    'small-hobby': '小项目是爱好',
-    'earning': '项目赚钱',
-    'working-on-earning': '项目正在努力实现赚钱'
+  const projectSizeLabels = {
+    'small': '小项目',
+    'medium': '中项目',
+    'large': '大项目'
   }
-
-  const priorityColors = {
-    'small-earning': 'bg-green-100 text-green-800',
-    'small-potential': 'bg-blue-100 text-blue-800',
-    'small-hobby': 'bg-purple-100 text-purple-800',
+  
+  const profitStatusLabels = {
+    'earning': '赚钱',
+    'trying': '尝试赚钱',
+    'hobby': '爱好'
+  }
+  
+  const difficultyLabels = {
+    'easy': '简单',
+    'normal': '普通',
+    'hard': '困难'
+  }
+  
+  const difficultyColors = {
+    'easy': 'bg-green-100 text-green-800',
+    'normal': 'bg-yellow-100 text-yellow-800',
+    'hard': 'bg-red-100 text-red-800'
+  }
+  
+  const profitStatusColors = {
     'earning': 'bg-emerald-100 text-emerald-800',
-    'working-on-earning': 'bg-orange-100 text-orange-800'
+    'trying': 'bg-orange-100 text-orange-800',
+    'hobby': 'bg-purple-100 text-purple-800'
   }
 
   return (
@@ -75,9 +89,17 @@ function SortableProjectItem({ project, index, onOrderChange }: SortableProjectI
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <h3 className="font-semibold text-lg">{project.name}</h3>
-            <span className={`text-xs px-2 py-1 rounded ${priorityColors[project.priority]}`}>
-              {priorityLabels[project.priority]}
-            </span>
+            <div className="flex gap-2">
+              <span className={`text-xs px-2 py-1 rounded ${profitStatusColors[project.profitStatus || 'hobby']}`}>
+                {profitStatusLabels[project.profitStatus || 'hobby']}
+              </span>
+              <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800">
+                {projectSizeLabels[project.projectSize || 'small']}
+              </span>
+              <span className={`text-xs px-2 py-1 rounded ${difficultyColors[project.difficulty || 'normal']}`}>
+                {difficultyLabels[project.difficulty || 'normal']}
+              </span>
+            </div>
           </div>
           {project.description && (
             <p className="text-sm text-gray-600 mt-1">{project.description}</p>

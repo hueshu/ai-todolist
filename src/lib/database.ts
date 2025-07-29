@@ -177,6 +177,9 @@ export const projectService = {
       industryId: row.industry_id || undefined,
       duration: row.duration,
       priority: row.priority,
+      projectSize: row.project_size || 'small',
+      profitStatus: row.profit_status || 'hobby',
+      difficulty: row.difficulty || 'normal',
       status: row.status,
       displayOrder: row.display_order,
       weeklyGoals: row.weekly_goals,
@@ -199,6 +202,9 @@ export const projectService = {
         industry_id: project.industryId || null,
         duration: project.duration,
         priority: project.priority,
+        project_size: project.projectSize || 'small',
+        profit_status: project.profitStatus || 'hobby',
+        difficulty: project.difficulty || 'normal',
         status: project.status,
         weekly_goals: project.weeklyGoals,
       })
@@ -219,6 +225,9 @@ export const projectService = {
       industryId: data.industry_id || undefined,
       duration: data.duration,
       priority: data.priority,
+      projectSize: data.project_size || 'small',
+      profitStatus: data.profit_status || 'hobby',
+      difficulty: data.difficulty || 'normal',
       status: data.status,
       weeklyGoals: data.weekly_goals,
       milestones: [],
@@ -238,6 +247,9 @@ export const projectService = {
     if (updates.industryId !== undefined) updateData.industry_id = updates.industryId || null
     if (updates.duration !== undefined) updateData.duration = updates.duration
     if (updates.priority !== undefined) updateData.priority = updates.priority
+    if (updates.projectSize !== undefined) updateData.project_size = updates.projectSize
+    if (updates.profitStatus !== undefined) updateData.profit_status = updates.profitStatus
+    if (updates.difficulty !== undefined) updateData.difficulty = updates.difficulty
     if (updates.status !== undefined) updateData.status = updates.status
     if (updates.weeklyGoals !== undefined) updateData.weekly_goals = updates.weeklyGoals
     if (updates.displayOrder !== undefined) updateData.display_order = updates.displayOrder
@@ -258,6 +270,9 @@ export const projectService = {
       industryId: data.industry_id || undefined,
       duration: data.duration,
       priority: data.priority,
+      projectSize: data.project_size || 'small',
+      profitStatus: data.profit_status || 'hobby',
+      difficulty: data.difficulty || 'normal',
       status: data.status,
       displayOrder: data.display_order,
       weeklyGoals: data.weekly_goals,

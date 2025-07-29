@@ -26,6 +26,9 @@ export function ProjectManager() {
     description: '',
     duration: 30,
     priority: 'small-potential' as Project['priority'],
+    projectSize: 'small' as Project['projectSize'],
+    profitStatus: 'hobby' as Project['profitStatus'],
+    difficulty: 'normal' as Project['difficulty'],
     industryId: ''
   })
   
@@ -86,6 +89,9 @@ export function ProjectManager() {
           industryId: newProject.industryId || undefined,
           duration: newProject.duration,
           priority: newProject.priority,
+          projectSize: newProject.projectSize,
+          profitStatus: newProject.profitStatus,
+          difficulty: newProject.difficulty,
         })
         setEditingProject(null)
       } else {
@@ -95,6 +101,9 @@ export function ProjectManager() {
           industryId: newProject.industryId || undefined,
           duration: newProject.duration,
           priority: newProject.priority,
+          projectSize: newProject.projectSize,
+          profitStatus: newProject.profitStatus,
+          difficulty: newProject.difficulty,
           status: 'active' as const,
           weeklyGoals: [],
           milestones: [],
@@ -102,7 +111,7 @@ export function ProjectManager() {
         await addProject(projectData)
       }
       
-      setNewProject({ name: '', description: '', duration: 30, priority: 'small-potential', industryId: '' })
+      setNewProject({ name: '', description: '', duration: 30, priority: 'small-potential', projectSize: 'small', profitStatus: 'hobby', difficulty: 'normal', industryId: '' })
       setIsCreating(false)
     } catch (error) {
       console.error('Failed to save project:', error)
@@ -124,6 +133,9 @@ export function ProjectManager() {
       description: project.description,
       duration: project.duration,
       priority: project.priority,
+      projectSize: project.projectSize || 'small',
+      profitStatus: project.profitStatus || 'hobby',
+      difficulty: project.difficulty || 'normal',
       industryId: project.industryId || ''
     })
     setIsCreating(true)
@@ -151,6 +163,37 @@ export function ProjectManager() {
     'small-hobby': 'bg-purple-100 text-purple-800',
     'earning': 'bg-emerald-100 text-emerald-800',
     'working-on-earning': 'bg-orange-100 text-orange-800'
+  }
+  
+  // 项目属性标签
+  const projectSizeLabels = {
+    'small': '小项目',
+    'medium': '中项目',
+    'large': '大项目'
+  }
+  
+  const profitStatusLabels = {
+    'earning': '赚钱',
+    'trying': '尝试赚钱',
+    'hobby': '爱好'
+  }
+  
+  const difficultyLabels = {
+    'easy': '简单',
+    'normal': '普通',
+    'hard': '困难'
+  }
+  
+  const difficultyColors = {
+    'easy': 'bg-green-100 text-green-800',
+    'normal': 'bg-yellow-100 text-yellow-800',
+    'hard': 'bg-red-100 text-red-800'
+  }
+  
+  const profitStatusColors = {
+    'earning': 'bg-emerald-100 text-emerald-800',
+    'trying': 'bg-orange-100 text-orange-800',
+    'hobby': 'bg-purple-100 text-purple-800'
   }
   
   // 如果正在查看优先级排序，显示排序界面
@@ -204,14 +247,15 @@ export function ProjectManager() {
                           <CardDescription className="mt-1 text-sm line-clamp-2">{project.description}</CardDescription>
                         )}
                       </div>
-                      <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded whitespace-nowrap ${priorityColors[priority]}`}>
-                        {priorityIcons[priority]}
-                        <span className="hidden xs:inline">{priorityLabels[priority]}</span>
-                        <span className="xs:hidden">
-                          {priority === 'small-earning' ? '小赚钱' :
-                           priority === 'small-potential' ? '可赚钱' :
-                           priority === 'small-hobby' ? '爱好' :
-                           priority === 'earning' ? '赚钱' : '努力中'}
+                      <div className="flex gap-2 flex-wrap">
+                        <span className={`text-xs px-2 py-1 rounded ${profitStatusColors[project.profitStatus || 'hobby']}`}>
+                          {profitStatusLabels[project.profitStatus || 'hobby']}
+                        </span>
+                        <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800">
+                          {projectSizeLabels[project.projectSize || 'small']}
+                        </span>
+                        <span className={`text-xs px-2 py-1 rounded ${difficultyColors[project.difficulty || 'normal']}`}>
+                          {difficultyLabels[project.difficulty || 'normal']}
                         </span>
                       </div>
                     </div>
@@ -351,7 +395,7 @@ export function ProjectManager() {
               setIsCreating(!isCreating)
               if (!isCreating) {
                 setEditingProject(null)
-                setNewProject({ name: '', description: '', duration: 30, priority: 'small-potential', industryId: '' })
+                setNewProject({ name: '', description: '', duration: 30, priority: 'small-potential', projectSize: 'small', profitStatus: 'hobby', difficulty: 'normal', industryId: '' })
               }
             }}
             className="text-sm px-3 py-1 h-8"
@@ -395,33 +439,59 @@ export function ProjectManager() {
                 ))}
               </select>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm text-muted-foreground block mb-1">项目周期</label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    value={newProject.duration}
-                    onChange={(e) => setNewProject({ ...newProject, duration: Number(e.target.value) })}
-                    min="1"
-                    className="w-20 h-10 text-base"
-                  />
-                  <span className="text-sm">天</span>
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-muted-foreground block mb-1">项目周期</label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      value={newProject.duration}
+                      onChange={(e) => setNewProject({ ...newProject, duration: Number(e.target.value) })}
+                      min="1"
+                      className="w-20 h-10 text-base"
+                    />
+                    <span className="text-sm">天</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground block mb-1">项目大小</label>
+                  <select
+                    className="w-full h-11 rounded-md border border-input bg-background px-3 py-2 text-base"
+                    value={newProject.projectSize}
+                    onChange={(e) => setNewProject({ ...newProject, projectSize: e.target.value as Project['projectSize'] })}
+                  >
+                    <option value="small">小项目</option>
+                    <option value="medium">中项目</option>
+                    <option value="large">大项目</option>
+                  </select>
                 </div>
               </div>
-              <div>
-                <label className="text-sm text-muted-foreground block mb-1">项目类型</label>
-                <select
-                  className="w-full h-11 rounded-md border border-input bg-background px-3 py-2 text-base"
-                  value={newProject.priority}
-                  onChange={(e) => setNewProject({ ...newProject, priority: e.target.value as Project['priority'] })}
-                >
-                  <option value="small-earning">小项目在赚钱</option>
-                  <option value="small-potential">小项目可能赚钱</option>
-                  <option value="small-hobby">小项目是爱好</option>
-                  <option value="earning">项目赚钱</option>
-                  <option value="working-on-earning">项目正在努力实现赚钱</option>
-                </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-muted-foreground block mb-1">是否已经赚钱</label>
+                  <select
+                    className="w-full h-11 rounded-md border border-input bg-background px-3 py-2 text-base"
+                    value={newProject.profitStatus}
+                    onChange={(e) => setNewProject({ ...newProject, profitStatus: e.target.value as Project['profitStatus'] })}
+                  >
+                    <option value="earning">赚钱</option>
+                    <option value="trying">尝试赚钱</option>
+                    <option value="hobby">爱好</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground block mb-1">难易度</label>
+                  <select
+                    className="w-full h-11 rounded-md border border-input bg-background px-3 py-2 text-base"
+                    value={newProject.difficulty}
+                    onChange={(e) => setNewProject({ ...newProject, difficulty: e.target.value as Project['difficulty'] })}
+                  >
+                    <option value="easy">简单</option>
+                    <option value="normal">普通难度</option>
+                    <option value="hard">难</option>
+                  </select>
+                </div>
               </div>
             </div>
             <div className="space-y-2">
@@ -464,14 +534,15 @@ export function ProjectManager() {
                       <CardDescription className="mt-1 text-sm line-clamp-2">{project.description}</CardDescription>
                     )}
                   </div>
-                  <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded whitespace-nowrap ${priorityColors[priority]}`}>
-                    {priorityIcons[priority]}
-                    <span className="hidden xs:inline">{priorityLabels[priority]}</span>
-                    <span className="xs:hidden">
-                      {priority === 'small-earning' ? '小赚钱' :
-                       priority === 'small-potential' ? '可赚钱' :
-                       priority === 'small-hobby' ? '爱好' :
-                       priority === 'earning' ? '赚钱' : '努力中'}
+                  <div className="flex gap-2 flex-wrap">
+                    <span className={`text-xs px-2 py-1 rounded ${profitStatusColors[project.profitStatus || 'hobby']}`}>
+                      {profitStatusLabels[project.profitStatus || 'hobby']}
+                    </span>
+                    <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800">
+                      {projectSizeLabels[project.projectSize || 'small']}
+                    </span>
+                    <span className={`text-xs px-2 py-1 rounded ${difficultyColors[project.difficulty || 'normal']}`}>
+                      {difficultyLabels[project.difficulty || 'normal']}
                     </span>
                   </div>
                 </div>

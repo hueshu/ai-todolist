@@ -23,7 +23,10 @@ export interface Project {
   description: string;
   industryId?: string; // 所属行业ID
   duration: number; // 项目周期（天数）
-  priority: 'small-earning' | 'small-potential' | 'small-hobby' | 'earning' | 'working-on-earning';
+  priority: 'small-earning' | 'small-potential' | 'small-hobby' | 'earning' | 'working-on-earning'; // 保留用于兼容
+  projectSize?: 'small' | 'medium' | 'large'; // 项目大小
+  profitStatus?: 'earning' | 'trying' | 'hobby'; // 是否赚钱
+  difficulty?: 'easy' | 'normal' | 'hard'; // 难易度
   status: 'active' | 'completed' | 'archived';
   displayOrder?: number; // 显示顺序，用于自定义排序
   weeklyGoals: string[];
