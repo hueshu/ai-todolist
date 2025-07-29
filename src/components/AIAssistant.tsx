@@ -71,7 +71,7 @@ export function AIAssistant() {
       console.log('Sending request with data:', {
         date: now,
         startTime: now,
-        availableHours: availableHours,
+        availableHours: 8,
         existingTasks: tasksWithProjectInfo,
         projects: projects,
         fixedEvents: fixedEvents,
