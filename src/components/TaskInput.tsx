@@ -91,31 +91,45 @@ export function TaskInput() {
   }
 
   return (
-    <div className="space-y-4">
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="输入任务内容，支持自然语言..."
-          className="flex-1"
-        />
-        <Button 
-          type="button" 
-          variant="outline"
-          onClick={handleAIAnalysis}
-          disabled={isAnalyzing}
-        >
-          <Brain className="w-4 h-4 mr-1" />
-          {isAnalyzing ? '分析中...' : 'AI分析'}
-        </Button>
-        <Button type="submit">添加任务</Button>
-      </form>
+    <div className="space-y-6">
+      {/* 主输入区域 */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="输入任务内容，支持自然语言..."
+            className="flex-1 h-12 text-base rounded-xl border-blue-200 focus:border-blue-400 focus:ring-blue-200"
+          />
+          <div className="flex gap-2">
+            <Button 
+              type="button" 
+              variant="outline"
+              onClick={handleAIAnalysis}
+              disabled={isAnalyzing}
+              className="h-12 px-6 rounded-xl border-blue-200 hover:bg-blue-50 transition-all"
+            >
+              <Brain className="w-4 h-4 mr-2" />
+              {isAnalyzing ? '分析中...' : 'AI分析'}
+            </Button>
+            <Button 
+              type="submit" 
+              className="h-12 px-6 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg"
+            >
+              添加任务
+            </Button>
+          </div>
+        </form>
+      </div>
       
-      <div className="p-4 bg-gray-50 rounded-lg space-y-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* 详细设置区域 */}
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 shadow-sm space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div>
-            <label className="text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
-              <Clock className="w-4 h-4" />
+            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                <Clock className="w-3 h-3 text-blue-600" />
+              </div>
               预估时长
             </label>
             <Input
@@ -124,17 +138,22 @@ export function TaskInput() {
               onChange={(e) => setEstimatedHours(Number(e.target.value))}
               min="0.1"
               step="0.1"
-              className="text-center"
+              className="text-center h-11 rounded-xl border-gray-200 focus:border-blue-400"
               placeholder="小时"
             />
           </div>
           
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">优先级</label>
+            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center">
+                <span className="text-orange-600 text-xs">⚡</span>
+              </div>
+              优先级
+            </label>
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value as Task['priority'])}
-              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+              className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
             >
               <option value="urgent">🔴 紧急</option>
               <option value="high">🟠 高</option>
@@ -144,11 +163,16 @@ export function TaskInput() {
           </div>
           
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">所属项目</label>
+            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+                <span className="text-purple-600 text-xs">📁</span>
+              </div>
+              所属项目
+            </label>
             <select
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
-              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+              className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
             >
               <option value="">📋 无项目</option>
               {projects.map(project => (
@@ -160,11 +184,16 @@ export function TaskInput() {
           </div>
           
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">任务类型</label>
+            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="text-green-600 text-xs">🔄</span>
+              </div>
+              任务类型
+            </label>
             <select
               value={taskType}
               onChange={(e) => setTaskType(e.target.value as Task['taskType'])}
-              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+              className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
             >
               <option value="single">📅 单次任务</option>
               <option value="daily">🔁 每日任务</option>
@@ -175,8 +204,13 @@ export function TaskInput() {
         </div>
         
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">快捷设置时长</label>
-          <div className="flex flex-wrap gap-2">
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-4">
+            <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
+              <span className="text-indigo-600 text-xs">⚡</span>
+            </div>
+            快捷设置时长
+          </label>
+          <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
             {[
               { label: '10分钟', value: 0.17 },
               { label: '20分钟', value: 0.33 },
@@ -195,10 +229,10 @@ export function TaskInput() {
                 key={label}
                 type="button"
                 onClick={() => setEstimatedHours(value)}
-                className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
+                className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all duration-200 ${
                   estimatedHours === value
-                    ? 'bg-blue-500 text-white border-blue-500'
-                    : 'bg-white hover:bg-gray-50 border-gray-300'
+                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-blue-500 shadow-md transform scale-105'
+                    : 'bg-white hover:bg-blue-50 border-gray-200 text-gray-700 hover:border-blue-300'
                 }`}
               >
                 {label}

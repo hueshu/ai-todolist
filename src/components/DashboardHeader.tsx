@@ -30,40 +30,59 @@ export function DashboardHeader() {
   const completedHoursToday = completedToday.reduce((sum, task) => sum + (task.actualHours || task.estimatedHours), 0)
   
   return (
-    <div className="mb-8">
-      <h1 className="text-3xl font-bold mb-2">
-        {format(getBeijingTime(), 'M月d日 EEEE', { locale: zhCN })}
-      </h1>
-      <p className="text-muted-foreground mb-4">
-        今日任务 {todayTasks.length} 个，已完成 {completedToday.length} 个，剩余 {pendingToday.length} 个
-      </p>
+    <div className="text-center mb-8">
+      {/* 主标题区域 */}
+      <div className="mb-6">
+        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent mb-3">
+          {format(getBeijingTime(), 'M月d日', { locale: zhCN })}
+        </h1>
+        <h2 className="text-xl md:text-2xl font-medium text-gray-600 mb-2">
+          {format(getBeijingTime(), 'EEEE', { locale: zhCN })}
+        </h2>
+        <p className="text-gray-500 text-sm md:text-base">
+          今日任务 {todayTasks.length} 个，已完成 {completedToday.length} 个，剩余 {pendingToday.length} 个
+        </p>
+      </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">今日待办</p>
-            <p className="text-2xl font-bold">{pendingToday.length}</p>
+      {/* 统计卡片区域 */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-4 md:p-6 text-center">
+            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-white font-bold text-lg">📋</span>
+            </div>
+            <p className="text-sm text-blue-600 font-medium mb-1">今日待办</p>
+            <p className="text-3xl font-bold text-blue-800">{pendingToday.length}</p>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">今日完成</p>
-            <p className="text-2xl font-bold">{completedToday.length}</p>
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-4 md:p-6 text-center">
+            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-white font-bold text-lg">✅</span>
+            </div>
+            <p className="text-sm text-green-600 font-medium mb-1">今日完成</p>
+            <p className="text-3xl font-bold text-green-800">{completedToday.length}</p>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">计划工时</p>
-            <p className="text-2xl font-bold">{totalHoursToday.toFixed(1)}h</p>
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-4 md:p-6 text-center">
+            <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-white font-bold text-lg">⏰</span>
+            </div>
+            <p className="text-sm text-orange-600 font-medium mb-1">计划工时</p>
+            <p className="text-3xl font-bold text-orange-800">{totalHoursToday.toFixed(1)}h</p>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">完成工时</p>
-            <p className="text-2xl font-bold">{completedHoursToday.toFixed(1)}h</p>
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-4 md:p-6 text-center">
+            <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-white font-bold text-lg">⚡</span>
+            </div>
+            <p className="text-sm text-purple-600 font-medium mb-1">完成工时</p>
+            <p className="text-3xl font-bold text-purple-800">{completedHoursToday.toFixed(1)}h</p>
           </CardContent>
         </Card>
       </div>

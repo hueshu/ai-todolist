@@ -171,59 +171,67 @@ ${!isUrlValid || !isKeyValid ? '\n⚠️  请检查Vercel环境变量配置！' 
   }
 
   return (
-    <div className="p-4 border rounded-lg bg-gray-50">
-      <h3 className="font-bold mb-3">🔧 数据库连接测试</h3>
-      
-      <div className="space-x-2 mb-3">
-        <Button 
-          onClick={testEnvVars}
-          variant="outline"
-          size="sm"
-        >
-          检查环境变量
-        </Button>
-        
-        <Button 
-          onClick={testConnection} 
-          disabled={isLoading}
-          size="sm"
-        >
-          {isLoading ? '测试中...' : '测试数据库连接'}
-        </Button>
-        
-        <Button 
-          onClick={testRealCRUD} 
-          disabled={isLoading}
-          size="sm"
-          className="bg-blue-500 hover:bg-blue-600"
-        >
-          {isLoading ? '测试中...' : '测试真实CRUD'}
-        </Button>
-        
-        <Button 
-          onClick={testStoreOperations} 
-          disabled={isLoading}
-          size="sm"
-          className="bg-green-500 hover:bg-green-600"
-        >
-          {isLoading ? '测试中...' : '测试Store操作'}
-        </Button>
-        
-        <Button 
-          onClick={forceRefresh} 
-          disabled={isLoading}
-          size="sm"
-          className="bg-orange-500 hover:bg-orange-600"
-        >
-          {isLoading ? '刷新中...' : '强制刷新'}
-        </Button>
+    <div className="rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 overflow-hidden">
+      <div className="px-4 py-3 bg-gray-800 text-white">
+        <h3 className="font-semibold text-sm flex items-center gap-2">
+          🔧 系统状态检测
+        </h3>
       </div>
       
-      {testResult && (
-        <pre className="text-sm bg-white p-2 rounded border whitespace-pre-wrap">
-          {testResult}
-        </pre>
-      )}
+      <div className="p-4 space-y-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+          <Button 
+            onClick={testEnvVars}
+            variant="outline"
+            size="sm"
+            className="text-xs h-8 rounded-lg hover:bg-blue-50 border-blue-200"
+          >
+            环境变量
+          </Button>
+          
+          <Button 
+            onClick={testConnection} 
+            disabled={isLoading}
+            size="sm"
+            className="text-xs h-8 rounded-lg bg-blue-500 hover:bg-blue-600 text-white"
+          >
+            {isLoading ? '测试中...' : '连接测试'}
+          </Button>
+          
+          <Button 
+            onClick={testRealCRUD} 
+            disabled={isLoading}
+            size="sm"
+            className="text-xs h-8 rounded-lg bg-green-500 hover:bg-green-600 text-white"
+          >
+            {isLoading ? '测试中...' : 'CRUD测试'}
+          </Button>
+          
+          <Button 
+            onClick={testStoreOperations} 
+            disabled={isLoading}
+            size="sm"
+            className="text-xs h-8 rounded-lg bg-purple-500 hover:bg-purple-600 text-white"
+          >
+            {isLoading ? '测试中...' : 'Store测试'}
+          </Button>
+          
+          <Button 
+            onClick={forceRefresh} 
+            disabled={isLoading}
+            size="sm"
+            className="text-xs h-8 rounded-lg bg-orange-500 hover:bg-orange-600 text-white"
+          >
+            {isLoading ? '刷新中...' : '强制刷新'}
+          </Button>
+        </div>
+        
+        {testResult && (
+          <div className="bg-gray-900 text-green-400 text-xs p-3 rounded-lg font-mono overflow-auto max-h-40">
+            <pre className="whitespace-pre-wrap">{testResult}</pre>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
