@@ -22,8 +22,6 @@ interface SortableProjectItemProps {
 }
 
 function SortableProjectItem({ project, index, onOrderChange }: SortableProjectItemProps) {
-  const [inputValue, setInputValue] = useState(index + 1)
-  
   const {
     attributes,
     listeners,
@@ -59,38 +57,18 @@ function SortableProjectItem({ project, index, onOrderChange }: SortableProjectI
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-white rounded-lg border p-4 mb-3 shadow-sm hover:shadow-md transition-shadow"
+      {...attributes}
+      {...listeners}
+      className="bg-white rounded-lg border p-4 mb-3 shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing"
     >
       <div className="flex items-center gap-4">
-        {/* 拖拽手柄 */}
-        <div
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
-        >
-          <GripVertical className="w-5 h-5" />
-        </div>
+        {/* 拖拽手柄图标 */}
+        <GripVertical className="w-5 h-5 text-gray-400" />
 
-        {/* 优先级编号 */}
+        {/* 序号显示 */}
         <div className="flex items-center gap-2">
           <Hash className="w-4 h-4 text-gray-400" />
-          <input
-            type="number"
-            value={inputValue}
-            onChange={(e) => setInputValue(Number(e.target.value))}
-            onBlur={() => {
-              if (inputValue !== index + 1 && inputValue > 0) {
-                onOrderChange(project.id, inputValue - 1)
-              }
-            }}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                e.currentTarget.blur()
-              }
-            }}
-            className="w-16 px-2 py-1 text-center border rounded-md text-sm"
-            min="1"
-          />
+          <span className="w-8 text-center font-medium text-gray-700">{index + 1}</span>
         </div>
 
         {/* 项目信息 */}
@@ -116,33 +94,37 @@ export function ProjectPrioritySort({ onBack }: ProjectPrioritySortProps) {
   
   // 只显示活跃项目，并创建本地排序状态
   const [sortedProjects, setSortedProjects] = useState<Project[]>([])
-  const [hasChanges, setHasChanges] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
-    const activeProjects = projects
-      .filter(p => p.status === 'active')
-      .sort((a, b) => {
-        // 优先使用 displayOrder，如果没有则使用默认优先级顺序
-        if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
-          return a.displayOrder - b.displayOrder
-        }
-        
-        // 如果只有一个有 displayOrder
-        if (a.displayOrder !== undefined) return -1
-        if (b.displayOrder !== undefined) return 1
-        
-        // 都没有 displayOrder，使用优先级预设顺序
-        const priorityOrder = {
-          'earning': 0,
-          'working-on-earning': 1,
-          'small-earning': 2,
-          'small-potential': 3,
-          'small-hobby': 4
-        }
-        return priorityOrder[a.priority] - priorityOrder[b.priority]
-      })
-    setSortedProjects(activeProjects)
-  }, [projects])
+    // 只在初始化时设置排序
+    if (!isInitialized) {
+      const activeProjects = projects
+        .filter(p => p.status === 'active')
+        .sort((a, b) => {
+          // 优先使用 displayOrder，如果没有则使用默认优先级顺序
+          if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
+            return a.displayOrder - b.displayOrder
+          }
+          
+          // 如果只有一个有 displayOrder
+          if (a.displayOrder !== undefined) return -1
+          if (b.displayOrder !== undefined) return 1
+          
+          // 都没有 displayOrder，使用优先级预设顺序
+          const priorityOrder = {
+            'earning': 0,
+            'working-on-earning': 1,
+            'small-earning': 2,
+            'small-potential': 3,
+            'small-hobby': 4
+          }
+          return priorityOrder[a.priority] - priorityOrder[b.priority]
+        })
+      setSortedProjects(activeProjects)
+      setIsInitialized(true)
+    }
+  }, [projects, isInitialized])
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -151,48 +133,28 @@ export function ProjectPrioritySort({ onBack }: ProjectPrioritySortProps) {
     })
   )
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
 
     if (active.id !== over?.id) {
-      setSortedProjects((items) => {
-        const oldIndex = items.findIndex((i) => i.id === active.id)
-        const newIndex = items.findIndex((i) => i.id === over?.id)
-        setHasChanges(true)
-        return arrayMove(items, oldIndex, newIndex)
-      })
+      const oldIndex = sortedProjects.findIndex((i) => i.id === active.id)
+      const newIndex = sortedProjects.findIndex((i) => i.id === over?.id)
+      
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newOrder = arrayMove(sortedProjects, oldIndex, newIndex)
+        setSortedProjects(newOrder)
+        
+        // 立即保存新的顺序
+        for (let i = 0; i < newOrder.length; i++) {
+          const project = newOrder[i]
+          if (project.displayOrder !== i) {
+            await updateProject(project.id, { displayOrder: i })
+          }
+        }
+      }
     }
   }
 
-  const handleOrderChange = (projectId: string, newOrder: number) => {
-    setSortedProjects((items) => {
-      const currentIndex = items.findIndex(p => p.id === projectId)
-      if (currentIndex === -1) return items
-      
-      // 确保新位置在有效范围内
-      const targetIndex = Math.max(0, Math.min(items.length - 1, newOrder))
-      
-      if (currentIndex !== targetIndex) {
-        setHasChanges(true)
-        return arrayMove(items, currentIndex, targetIndex)
-      }
-      return items
-    })
-  }
-
-  const handleSave = async () => {
-    // 为每个项目更新 displayOrder
-    for (let i = 0; i < sortedProjects.length; i++) {
-      const project = sortedProjects[i]
-      
-      // 只有当 displayOrder 改变时才更新
-      if (project.displayOrder !== i) {
-        await updateProject(project.id, { displayOrder: i })
-      }
-    }
-    
-    setHasChanges(false)
-  }
 
   return (
     <div className="space-y-4">
@@ -208,14 +170,6 @@ export function ProjectPrioritySort({ onBack }: ProjectPrioritySortProps) {
           </Button>
           <h2 className="text-xl font-semibold">项目优先级排序</h2>
         </div>
-        <Button 
-          onClick={handleSave}
-          disabled={!hasChanges}
-          className="gap-2"
-        >
-          <Save className="w-4 h-4" />
-          保存排序
-        </Button>
       </div>
 
       <Card>
@@ -225,7 +179,7 @@ export function ProjectPrioritySort({ onBack }: ProjectPrioritySortProps) {
         <CardContent>
           <div className="text-sm text-gray-600 space-y-2">
             <p>• 拖拽项目卡片来调整显示顺序</p>
-            <p>• 或者直接修改序号（输入后按回车或点击其他地方）</p>
+            <p>• 拖拽后会自动保存新的顺序</p>
             <p>• <strong>注意：</strong>这只会改变项目的显示顺序，不会改变项目类型</p>
             <p>• 项目类型保持不变：</p>
             <div className="ml-4 space-y-1 text-xs">
@@ -254,7 +208,7 @@ export function ProjectPrioritySort({ onBack }: ProjectPrioritySortProps) {
                 key={project.id}
                 project={project}
                 index={index}
-                onOrderChange={handleOrderChange}
+                onOrderChange={() => {}}
               />
             ))}
           </SortableContext>
