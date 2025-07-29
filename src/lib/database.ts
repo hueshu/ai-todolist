@@ -88,8 +88,8 @@ export const taskService = {
     }
   },
 
-  async update(id: string, updates: Partial<Task>): Promise<void> {
-    const { error } = await supabase
+  async update(id: string, updates: Partial<Task>): Promise<Task> {
+    const { data, error } = await supabase
       .from('tasks')
       .update({
         title: updates.title,
@@ -107,8 +107,28 @@ export const taskService = {
         completed_at: updates.completedAt?.toISOString() || null,
       })
       .eq('id', id)
+      .select()
+      .single()
     
     if (error) throw error
+    return {
+      id: data.id,
+      title: data.title,
+      description: data.description || undefined,
+      projectId: data.project_id || undefined,
+      priority: data.priority,
+      estimatedHours: data.estimated_hours,
+      actualHours: data.actual_hours || undefined,
+      deadline: data.deadline ? new Date(data.deadline) : undefined,
+      scheduledStartTime: data.scheduled_start_time ? new Date(data.scheduled_start_time) : undefined,
+      timeSlot: data.time_slot || undefined,
+      status: data.status,
+      tags: data.tags,
+      dependencies: [],
+      taskType: data.task_type,
+      createdAt: new Date(data.created_at),
+      completedAt: data.completed_at ? new Date(data.completed_at) : undefined,
+    }
   },
 
   async delete(id: string): Promise<void> {
@@ -178,8 +198,8 @@ export const projectService = {
     }
   },
 
-  async update(id: string, updates: Partial<Project>): Promise<void> {
-    const { error } = await supabase
+  async update(id: string, updates: Partial<Project>): Promise<Project> {
+    const { data, error } = await supabase
       .from('projects')
       .update({
         name: updates.name,
@@ -191,8 +211,23 @@ export const projectService = {
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
+      .select()
+      .single()
     
     if (error) throw error
+    
+    return {
+      id: data.id,
+      name: data.name,
+      description: data.description || '',
+      duration: data.duration,
+      priority: data.priority,
+      status: data.status,
+      weeklyGoals: data.weekly_goals,
+      milestones: [],
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
+    }
   },
 
   async delete(id: string): Promise<void> {
@@ -266,8 +301,8 @@ export const fixedEventService = {
     }
   },
 
-  async update(id: string, updates: Partial<FixedEvent>): Promise<void> {
-    const { error } = await supabase
+  async update(id: string, updates: Partial<FixedEvent>): Promise<FixedEvent> {
+    const { data, error } = await supabase
       .from('fixed_events')
       .update({
         title: updates.title,
@@ -281,8 +316,24 @@ export const fixedEventService = {
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
+      .select()
+      .single()
     
     if (error) throw error
+    
+    return {
+      id: data.id,
+      title: data.title,
+      description: data.description || undefined,
+      startTime: data.start_time,
+      endTime: data.end_time,
+      daysOfWeek: data.days_of_week,
+      category: data.category,
+      color: data.color,
+      isActive: data.is_active,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
+    }
   },
 
   async delete(id: string): Promise<void> {
