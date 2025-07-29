@@ -208,41 +208,43 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
     const correctedSchedule = correctScheduleTiming(result.schedule || [], startTime)
     
     // 处理返回的数据，确保taskId正确映射到任务
-    const response: DailyPlanResponse = {
-      schedule: correctedSchedule.map((item: any) => {
-        // 如果是休息时间，创建一个休息任务
-        if (item.type === 'break' || item.taskId === 'break') {
-          return {
-            timeSlot: item.timeSlot,
-            task: {
-              id: 'break',
-              title: '休息时间',
-              priority: 'low' as const,
-              estimatedHours: 0.25,
-              status: 'scheduled' as const,
-              tags: ['休息'],
-              taskType: 'single' as const,
-              createdAt: getBeijingTime()
-            } as Task,
-            type: 'break' as const,
-            reason: item.reason
-          }
-        }
-        
-        // 查找实际任务
-        const task = body.existingTasks.find(t => t.id === item.taskId)
-        if (!task) {
-          console.warn(`Task not found: ${item.taskId}`)
-          return null
-        }
-        
+    const scheduleItems = correctedSchedule.map((item: any) => {
+      // 如果是休息时间，创建一个休息任务
+      if (item.type === 'break' || item.taskId === 'break') {
         return {
           timeSlot: item.timeSlot,
-          task: task,
-          type: item.type as 'focus' | 'regular' | 'break',
-          reason: item.reason
+          task: {
+            id: 'break',
+            title: '休息时间',
+            priority: 'low' as const,
+            estimatedHours: 0.25,
+            status: 'scheduled' as const,
+            tags: ['休息'],
+            taskType: 'single' as const,
+            createdAt: getBeijingTime()
+          } as Task,
+          type: 'break' as const,
+          reason: item.reason || '休息时间'
         }
-      }).filter(Boolean) || [],
+      }
+      
+      // 查找实际任务
+      const task = body.existingTasks.find(t => t.id === item.taskId)
+      if (!task) {
+        console.warn(`Task not found: ${item.taskId}`)
+        return null
+      }
+      
+      return {
+        timeSlot: item.timeSlot,
+        task: task,
+        type: item.type as 'focus' | 'regular' | 'break',
+        reason: item.reason || '工作任务'
+      }
+    }).filter((item): item is NonNullable<typeof item> => item !== null)
+
+    const response: DailyPlanResponse = {
+      schedule: scheduleItems,
       suggestions: result.suggestions || [],
       estimatedProductivity: result.estimatedProductivity || 75,
       projectAnalysis: result.projectAnalysis || {
