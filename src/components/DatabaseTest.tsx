@@ -14,15 +14,41 @@ export function DatabaseTest() {
     
     try {
       // 测试基础连接
-      const { data, error } = await supabase
+      const { data, error, count } = await supabase
         .from('tasks')
-        .select('count(*)', { count: 'exact' })
+        .select('*', { count: 'exact' })
         .limit(1)
       
       if (error) {
         setTestResult(`❌ 数据库连接失败: ${error.message}`)
       } else {
-        setTestResult(`✅ 数据库连接成功! 当前有 ${data?.length || 0} 条记录`)
+        setTestResult(`✅ 数据库连接成功! 表存在，当前有 ${count || 0} 条任务记录`)
+        
+        // 测试插入一条数据
+        const testUserId = 'test-user-' + Date.now()
+        const { data: insertData, error: insertError } = await supabase
+          .from('tasks')
+          .insert({
+            user_id: testUserId,
+            title: '测试任务',
+            priority: 'medium',
+            estimated_hours: 1,
+            status: 'pool',
+            tags: [],
+            task_type: 'single'
+          })
+          .select()
+          .single()
+        
+        if (insertError) {
+          setTestResult(prev => prev + `\n❌ 插入测试失败: ${insertError.message}`)
+        } else {
+          setTestResult(prev => prev + `\n✅ 插入测试成功! 任务ID: ${insertData.id}`)
+          
+          // 清理测试数据
+          await supabase.from('tasks').delete().eq('id', insertData.id)
+          setTestResult(prev => prev + `\n🧹 测试数据已清理`)
+        }
       }
     } catch (error) {
       setTestResult(`❌ 连接异常: ${error instanceof Error ? error.message : '未知错误'}`)
