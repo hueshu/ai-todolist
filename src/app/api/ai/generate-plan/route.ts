@@ -163,28 +163,6 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
       throw new Error('Invalid response format: missing or invalid schedule')
     }
     
-    // 时间校正函数：确保计划从指定时间开始
-    const correctScheduleTiming = (schedule: any[], startTime: Date) => {
-      if (!schedule || schedule.length === 0) return []
-      
-      let currentTime = new Date(startTime)
-      console.log('开始时间校正，起始时间:', formatTime(currentTime))
-      
-      return schedule.map((item: any, index: number) => {
-        const duration = calculateDuration(item.timeSlot, item.type)
-        const nextTime = new Date(currentTime.getTime() + duration * 60000) // 分钟转毫秒
-        
-        const correctedTimeSlot = `${formatTime(currentTime)}-${formatTime(nextTime)}`
-        console.log(`任务${index + 1}: 原时间=${item.timeSlot}, 校正后=${correctedTimeSlot}, 时长=${duration}分钟`)
-        
-        currentTime = nextTime
-        
-        return {
-          ...item,
-          timeSlot: correctedTimeSlot
-        }
-      })
-    }
     
     // 计算时长的辅助函数
     const calculateDuration = (originalTimeSlot: string, type: string) => {
@@ -202,10 +180,6 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
       return 60 // regular
     }
     
-    // 时间格式化辅助函数
-    const formatTime = (date: Date) => {
-      return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
-    }
     
     // 时间字符串转分钟数
     const timeToMinutes = (timeStr: string) => {
@@ -213,8 +187,35 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
       return hours * 60 + minutes
     }
     
-    // 校正时间安排
-    const correctedSchedule = correctScheduleTiming(result.schedule || [], startTime)
+    // 校正时间安排 - 简化版本，直接重建时间
+    const correctedSchedule = (result.schedule || []).map((item: any, index: number) => {
+      // 计算每个任务应该开始的时间
+      let taskStartTime = new Date(startTime)
+      
+      // 为前面的任务累加时间
+      for (let i = 0; i < index; i++) {
+        const prevItem = result.schedule[i]
+        const duration = calculateDuration(prevItem.timeSlot, prevItem.type)
+        taskStartTime = new Date(taskStartTime.getTime() + duration * 60000)
+      }
+      
+      // 计算当前任务的结束时间
+      const duration = calculateDuration(item.timeSlot, item.type)
+      const taskEndTime = new Date(taskStartTime.getTime() + duration * 60000)
+      
+      // 格式化时间
+      const startHour = taskStartTime.getHours().toString().padStart(2, '0')
+      const startMin = taskStartTime.getMinutes().toString().padStart(2, '0')
+      const endHour = taskEndTime.getHours().toString().padStart(2, '0')
+      const endMin = taskEndTime.getMinutes().toString().padStart(2, '0')
+      
+      const correctedTimeSlot = `${startHour}:${startMin}-${endHour}:${endMin}`
+      
+      return {
+        ...item,
+        timeSlot: correctedTimeSlot
+      }
+    })
     
     // 处理返回的数据，确保taskId正确映射到任务
     const scheduleItems = correctedSchedule.map((item: any) => {
