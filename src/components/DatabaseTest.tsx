@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
+import { getTasks, createTask } from '@/lib/database'
 
 export function DatabaseTest() {
   const [testResult, setTestResult] = useState<string>('')
@@ -75,6 +76,43 @@ SUPABASE_KEY: ${key ? (isKeyValid ? '✅ 已正确配置' : '❌ 使用占位符
 ${!isUrlValid || !isKeyValid ? '\n⚠️  请检查Vercel环境变量配置！' : ''}`)
   }
 
+  const testRealCRUD = async () => {
+    setIsLoading(true)
+    setTestResult('正在测试真实的CRUD操作...')
+    
+    try {
+      // 测试获取任务
+      const existingTasks = await getTasks()
+      setTestResult(`✅ 获取任务成功! 当前有 ${existingTasks.length} 个任务`)
+      
+      // 测试创建任务
+      const newTaskData = {
+        title: '真实CRUD测试任务',
+        priority: 'medium' as const,
+        estimatedHours: 1,
+        status: 'pool' as const,
+        tags: [],
+        taskType: 'single' as const,
+      }
+      
+      const createdTask = await createTask(newTaskData)
+      setTestResult(prev => prev + `\n✅ 创建任务成功! ID: ${createdTask.id}`)
+      
+      // 再次获取任务确认创建成功
+      const updatedTasks = await getTasks()
+      setTestResult(prev => prev + `\n✅ 确认创建成功! 现在有 ${updatedTasks.length} 个任务`)
+      
+      // 清理测试任务
+      await supabase.from('tasks').delete().eq('id', createdTask.id)
+      setTestResult(prev => prev + `\n🧹 测试任务已清理`)
+      
+    } catch (error) {
+      setTestResult(prev => prev + `\n❌ CRUD操作失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="p-4 border rounded-lg bg-gray-50">
       <h3 className="font-bold mb-3">🔧 数据库连接测试</h3>
@@ -94,6 +132,15 @@ ${!isUrlValid || !isKeyValid ? '\n⚠️  请检查Vercel环境变量配置！' 
           size="sm"
         >
           {isLoading ? '测试中...' : '测试数据库连接'}
+        </Button>
+        
+        <Button 
+          onClick={testRealCRUD} 
+          disabled={isLoading}
+          size="sm"
+          className="bg-blue-500 hover:bg-blue-600"
+        >
+          {isLoading ? '测试中...' : '测试真实CRUD'}
         </Button>
       </div>
       
