@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
         duration: task.project.duration,
         priority: task.project.priority,
         priorityDescription: projectPriorityMap[task.project.priority || ''] || '未知优先级',
+        displayOrder: task.project.displayOrder, // 用户自定义的排序顺序
         weeklyGoals: task.project.weeklyGoals
       } : null
     }))
@@ -125,7 +126,9 @@ export async function POST(request: NextRequest) {
 固定事件（必须避开）：
 ${JSON.stringify(todayFixedEvents, null, 2)}
 
-项目概况：总${body.projects.length}个，活跃${body.projects.filter(p => p.status === 'active').length}个
+项目概况：
+- 总项目数：${body.projects.length}个，活跃${body.projects.filter(p => p.status === 'active').length}个
+- 用户自定义项目优先级（displayOrder）：${body.projects.filter(p => p.displayOrder !== undefined).sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999)).slice(0, 5).map(p => `${p.name}(顺序:${p.displayOrder || '未设置'})`).join('、')}${body.projects.filter(p => p.displayOrder !== undefined).length > 5 ? '等' : ''}
 任务频次：每日${body.taskFrequencyStats.daily}个，每周${body.taskFrequencyStats.weekly}个，每月${body.taskFrequencyStats.monthly}个，单次${body.taskFrequencyStats.single}个
 
 待安排任务（限制前15个以避免过长）：
@@ -136,7 +139,11 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
 2. **重要**：第一个时间段必须从${actualStartTime}开始，后续时间段连续安排
 3. **重要**：所有任务必须在${workEndTime}前结束，不要安排超过此时间的任务
 4. 避开固定事件时间
-5. daily任务优先，earning项目优先
+5. **优先级参考（非强制）**：
+   - daily/weekly等重复任务应优先安排
+   - 考虑用户自定义的项目优先级（displayOrder），但这只是参考，你可以根据任务紧急度、截止日期、依赖关系等因素灵活调整
+   - 如果用户给某个项目设置了较高的displayOrder（数字越小优先级越高），可以适当倾斜时间分配，但不必严格遵守
+   - 最终目标是制定一个合理高效的计划，而不是机械地按照排序来安排
 6. 高优先级任务在精力充沛时段
 7. **番茄工作法**：尽量将任务安排为30分钟的工作块，每个工作块后安排5分钟休息
    - 如果任务需要1小时，可以拆分为2个30分钟的番茄钟
