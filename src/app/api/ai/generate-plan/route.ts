@@ -157,9 +157,59 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
       throw new Error('Invalid response format: missing or invalid schedule')
     }
     
+    // 时间校正函数：确保计划从指定时间开始
+    const correctScheduleTiming = (schedule: any[], startTime: Date) => {
+      if (!schedule || schedule.length === 0) return []
+      
+      let currentTime = new Date(startTime)
+      
+      return schedule.map((item: any, index: number) => {
+        const duration = calculateDuration(item.timeSlot, item.type)
+        const nextTime = new Date(currentTime.getTime() + duration * 60000) // 分钟转毫秒
+        
+        const correctedTimeSlot = `${formatTime(currentTime)}-${formatTime(nextTime)}`
+        currentTime = nextTime
+        
+        return {
+          ...item,
+          timeSlot: correctedTimeSlot
+        }
+      })
+    }
+    
+    // 计算时长的辅助函数
+    const calculateDuration = (originalTimeSlot: string, type: string) => {
+      // 从原时间段提取时长，或根据类型设置默认时长
+      if (originalTimeSlot && originalTimeSlot.includes('-')) {
+        const [start, end] = originalTimeSlot.split('-')
+        const startMinutes = timeToMinutes(start)
+        const endMinutes = timeToMinutes(end)
+        return endMinutes - startMinutes
+      }
+      
+      // 默认时长
+      if (type === 'break') return 15
+      if (type === 'focus') return 90
+      return 60 // regular
+    }
+    
+    // 时间格式化辅助函数
+    const formatTime = (date: Date) => {
+      return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+    }
+    
+    // 时间字符串转分钟数
+    const timeToMinutes = (timeStr: string) => {
+      const [hours, minutes] = timeStr.split(':').map(Number)
+      return hours * 60 + minutes
+    }
+    
+    // 校正时间安排
+    const correctedSchedule = correctScheduleTiming(result.schedule || [], startTime)
+    
     // 处理返回的数据，确保taskId正确映射到任务
     const response: DailyPlanResponse = {
-      schedule: result.schedule?.map((item: any) => {
+      schedule: correctedSchedule.map((item: any) => {
         // 如果是休息时间，创建一个休息任务
         if (item.type === 'break' || item.taskId === 'break') {
           return {
