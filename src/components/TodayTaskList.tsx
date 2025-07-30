@@ -88,12 +88,39 @@ export function TodayTaskList() {
     setIsAddingTask(false)
   }
   
+  // 批量撤回所有未完成任务到任务池
+  const handleReturnAllToPool = () => {
+    if (!confirm('确定要将所有未完成任务撤回到任务池吗？')) return
+    
+    pendingTasks.forEach(task => {
+      updateTask(task.id, {
+        status: 'pool',
+        timeSlot: undefined,
+        scheduledStartTime: undefined,
+        deadline: undefined
+      })
+    })
+  }
+  
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold flex items-center gap-2">
-        <Calendar className="w-5 h-5" />
-        今日任务
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold flex items-center gap-2">
+          <Calendar className="w-5 h-5" />
+          今日任务
+        </h2>
+        {pendingTasks.length > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleReturnAllToPool}
+            className="text-xs"
+          >
+            <Undo2 className="w-4 h-4 mr-1" />
+            全部撤回
+          </Button>
+        )}
+      </div>
       
       {hasUrgentTasks && (
         <Card className="border-red-200 bg-red-50">
@@ -302,16 +329,6 @@ function TaskItem({ task, onFocusMode }: { task: Task; onFocusMode?: (task: Task
     }
   }
   
-  // 撤回任务到任务池
-  const handleReturnToPool = () => {
-    updateTask(task.id, { 
-      status: 'pool',
-      timeSlot: undefined,
-      scheduledStartTime: undefined,
-      deadline: undefined
-    })
-  }
-  
   return (
     <Card 
       className={cn(
@@ -372,26 +389,11 @@ function TaskItem({ task, onFocusMode }: { task: Task; onFocusMode?: (task: Task
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
-          <div className="text-xs font-medium">
-            {task.priority === 'urgent' && <span className="text-red-600">紧急</span>}
-            {task.priority === 'high' && <span className="text-orange-600">高</span>}
-            {task.priority === 'medium' && <span className="text-yellow-600">中</span>}
-            {task.priority === 'low' && <span className="text-green-600">低</span>}
-          </div>
-          
-          {/* 撤回按钮 - 只对未完成的任务显示 */}
-          {task.status !== 'completed' && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-gray-500 hover:text-gray-700"
-              onClick={handleReturnToPool}
-              title="撤回到任务池"
-            >
-              <Undo2 className="w-4 h-4" />
-            </Button>
-          )}
+        <div className="text-xs font-medium">
+          {task.priority === 'urgent' && <span className="text-red-600">紧急</span>}
+          {task.priority === 'high' && <span className="text-orange-600">高</span>}
+          {task.priority === 'medium' && <span className="text-yellow-600">中</span>}
+          {task.priority === 'low' && <span className="text-green-600">低</span>}
         </div>
       </CardContent>
     </Card>
