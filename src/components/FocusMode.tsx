@@ -158,18 +158,7 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
   const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0
 
   return (
-    <div 
-      className="fixed inset-0 bg-gray-900 z-[9999]"
-      style={{ 
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100vw',
-        height: '100vh'
-      }}
-    >
+    <div className="fixed inset-0 bg-gray-900 z-[9999] w-screen h-screen">
       {/* 隐藏的音频元素 */}
       <audio ref={audioRef} preload="auto">
         <source src="/notification.mp3" type="audio/mpeg" />
