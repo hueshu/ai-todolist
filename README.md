@@ -62,13 +62,13 @@ OPENAI_MODEL=gpt-4o  # 可选，默认 gpt-4o
 
 # Anthropic Claude
 ANTHROPIC_API_KEY=your-anthropic-api-key
-ANTHROPIC_MODEL=claude-sonnet-4-20250514  # 可选，默认 claude-sonnet-4
+ANTHROPIC_MODEL=claude-opus-4-20250514  # 可选，默认 claude-opus-4
 ```
 
 ### AI 模型支持
 
 - **OpenAI GPT**: 支持 GPT-4、GPT-3.5 等模型
-- **Anthropic Claude**: 支持 Claude Sonnet 4（默认）、Claude 3 Opus、Haiku 等模型
+- **Anthropic Claude**: 支持 Claude Opus 4（默认）、Claude Sonnet 4、Haiku 等模型
 
 在应用中可以随时切换使用不同的 AI 模型。
 
