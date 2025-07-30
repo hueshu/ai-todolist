@@ -21,10 +21,18 @@ export function TodayTaskList() {
   const tasks = useStore((state) => state.tasks)
   const addTask = useStore((state) => state.addTask)
   
-  // 获取今日任务
+  // 获取今日任务：包括今天安排的、今天完成的，或截止日期是今天的
   const todayTasks = tasks.filter(task => {
-    if (!task.deadline) return false
-    return isBeijingToday(task.deadline)
+    // 1. 有时间安排的任务（timeSlot 表示今天要做）
+    if (task.timeSlot) return true
+    
+    // 2. 今天完成的任务
+    if (task.completedAt && isBeijingToday(task.completedAt)) return true
+    
+    // 3. 截止日期是今天的任务
+    if (task.deadline && isBeijingToday(task.deadline)) return true
+    
+    return false
   }).sort((a, b) => {
     // 首先按是否有时间安排排序
     const aHasTimeSlot = !!a.timeSlot
