@@ -52,6 +52,9 @@ export interface Task {
   taskType: 'single' | 'daily' | 'weekly' | 'monthly'; // 任务类型：单次/每日/每周/每月
   createdAt: Date;
   completedAt?: Date;
+  originalTaskId?: string; // 原始任务ID（用于分段任务）
+  segmentIndex?: number; // 分段索引（例如：第1段、第2段）
+  totalSegments?: number; // 总分段数
 }
 
 export interface TaskAnalysisRequest {
@@ -120,6 +123,20 @@ export interface TaskCompletionFeedback {
   completionQuality: 'excellent' | 'good' | 'rushed';
   blockers?: string[];
   notes?: string;
+}
+
+// 任务完成历史记录
+export interface TaskCompletionHistory {
+  id: string;
+  taskId: string; // 关联的任务ID
+  taskTitle: string; // 任务标题（冗余存储，方便查询）
+  taskType: 'single' | 'daily' | 'weekly' | 'monthly'; // 任务类型
+  projectId?: string; // 项目ID
+  completedAt: Date; // 完成时间
+  estimatedHours: number; // 预估时间
+  actualHours?: number; // 实际时间
+  userId: string; // 用户ID
+  createdAt: Date; // 记录创建时间
 }
 
 // 固定事件接口

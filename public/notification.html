@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>生成通知音</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <h1>生成通知音</h1>
+    <button onclick="generateAndDownload()">生成并下载通知音</button>
+    
+    <script>
+    function generateAndDownload() {
+        // 创建音频上下文
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const sampleRate = audioContext.sampleRate;
+        const duration = 0.5; // 0.5秒
+        const bufferSize = sampleRate * duration;
+        
+        // 创建音频缓冲区
+        const buffer = audioContext.createBuffer(1, bufferSize, sampleRate);
+        const channelData = buffer.getChannelData(0);
+        
+        // 生成声音数据（两个音调的组合）
+        for (let i = 0; i < bufferSize; i++) {
+            const t = i / sampleRate;
+            // 组合两个频率创建和谐的提示音
+            const freq1 = 523.25; // C5
+            const freq2 = 659.25; // E5
+            const envelope = Math.exp(-3 * t); // 指数衰减
+            channelData[i] = envelope * 0.3 * (
+                Math.sin(2 * Math.PI * freq1 * t) + 
+                Math.sin(2 * Math.PI * freq2 * t)
+            );
+        }
+        
+        // 转换为 WAV 格式
+        const wav = audioBufferToWav(buffer);
+        const blob = new Blob([wav], { type: 'audio/wav' });
+        
+        // 下载文件
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'notification.wav';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+    
+    function audioBufferToWav(buffer) {
+        const length = buffer.length * buffer.numberOfChannels * 2 + 44;
+        const arrayBuffer = new ArrayBuffer(length);
+        const view = new DataView(arrayBuffer);
+        const channels = [];
+        let offset = 0;
+        let pos = 0;
+        
+        // 写入 WAV 头部
+        setUint32(0x46464952); // "RIFF"
+        setUint32(length - 8); // file length - 8
+        setUint32(0x45564157); // "WAVE"
+        
+        setUint32(0x20746d66); // "fmt " chunk
+        setUint32(16); // length = 16
+        setUint16(1); // PCM (uncompressed)
+        setUint16(buffer.numberOfChannels);
+        setUint32(buffer.sampleRate);
+        setUint32(buffer.sampleRate * 2 * buffer.numberOfChannels); // avg. bytes/sec
+        setUint16(buffer.numberOfChannels * 2); // block-align
+        setUint16(16); // 16-bit
+        
+        setUint32(0x61746164); // "data" - chunk
+        setUint32(length - pos - 4); // chunk length
+        
+        // 写入音频数据
+        for (let i = 0; i < buffer.numberOfChannels; i++) {
+            channels.push(buffer.getChannelData(i));
+        }
+        
+        let sample;
+        while (pos < length) {
+            for (let i = 0; i < buffer.numberOfChannels; i++) {
+                sample = Math.max(-1, Math.min(1, channels[i][offset]));
+                sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+                view.setInt16(pos, sample, true);
+                pos += 2;
+            }
+            offset++;
+        }
+        
+        return arrayBuffer;
+        
+        function setUint16(data) {
+            view.setUint16(pos, data, true);
+            pos += 2;
+        }
+        
+        function setUint32(data) {
+            view.setUint32(pos, data, true);
+            pos += 4;
+        }
+    }
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
-import { Task, Project, FixedEvent, Industry } from '@/types'
-import { getBeijingTime, toUTCString, fromUTCString } from './timezone'
+import { Task, Project, FixedEvent, Industry, TaskCompletionHistory } from '@/types'
+import { getBeijingTime, toUTCString, fromUTCString, isBeijingToday } from './timezone'
 
 // 获取当前用户ID (简化版，后续可以换成真正的认证)
 function getCurrentUserId(): string {
@@ -42,6 +42,9 @@ export const taskService = {
       taskType: row.task_type,
       createdAt: fromUTCString(row.created_at),
       completedAt: row.completed_at ? new Date(row.completed_at) : undefined,
+      originalTaskId: row.original_task_id || undefined,
+      segmentIndex: row.segment_index || undefined,
+      totalSegments: row.total_segments || undefined,
     })) || []
   },
 
@@ -67,6 +70,9 @@ export const taskService = {
         dependencies: task.dependencies || [],
         task_type: task.taskType,
         completed_at: task.completedAt?.toISOString() || null,
+        original_task_id: task.originalTaskId || null,
+        segment_index: task.segmentIndex || null,
+        total_segments: task.totalSegments || null,
       })
       .select()
       .single()
@@ -95,6 +101,9 @@ export const taskService = {
       taskType: data.task_type,
       createdAt: new Date(data.created_at),
       completedAt: data.completed_at ? new Date(data.completed_at) : undefined,
+      originalTaskId: data.original_task_id || undefined,
+      segmentIndex: data.segment_index || undefined,
+      totalSegments: data.total_segments || undefined,
     }
   },
 
@@ -116,6 +125,9 @@ export const taskService = {
     if (updates.dependencies !== undefined) updateData.dependencies = updates.dependencies
     if (updates.taskType !== undefined) updateData.task_type = updates.taskType
     if (updates.completedAt !== undefined) updateData.completed_at = updates.completedAt?.toISOString() || null
+    if (updates.originalTaskId !== undefined) updateData.original_task_id = updates.originalTaskId || null
+    if (updates.segmentIndex !== undefined) updateData.segment_index = updates.segmentIndex || null
+    if (updates.totalSegments !== undefined) updateData.total_segments = updates.totalSegments || null
     
     const { data, error } = await supabase
       .from('tasks')
@@ -142,6 +154,9 @@ export const taskService = {
       taskType: data.task_type,
       createdAt: new Date(data.created_at),
       completedAt: data.completed_at ? new Date(data.completed_at) : undefined,
+      originalTaskId: data.original_task_id || undefined,
+      segmentIndex: data.segment_index || undefined,
+      totalSegments: data.total_segments || undefined,
     }
   },
 
@@ -514,3 +529,157 @@ export const getIndustries = industryService.getAll
 export const createIndustry = industryService.create
 export const updateIndustry = industryService.update
 export const deleteIndustry = industryService.delete
+
+// 任务完成历史操作
+export const taskCompletionHistoryService = {
+  async create(history: Omit<TaskCompletionHistory, 'id' | 'createdAt'>): Promise<TaskCompletionHistory> {
+    const userId = getCurrentUserId()
+    const { data, error } = await supabase
+      .from('task_completion_history')
+      .insert({
+        user_id: userId,
+        task_id: history.taskId,
+        task_title: history.taskTitle,
+        task_type: history.taskType,
+        project_id: history.projectId || null,
+        completed_at: history.completedAt.toISOString(),
+        estimated_hours: history.estimatedHours,
+        actual_hours: history.actualHours || null
+      })
+      .select()
+      .single()
+    
+    if (error) throw error
+    return {
+      id: data.id,
+      taskId: data.task_id,
+      taskTitle: data.task_title,
+      taskType: data.task_type,
+      projectId: data.project_id || undefined,
+      completedAt: new Date(data.completed_at),
+      estimatedHours: data.estimated_hours,
+      actualHours: data.actual_hours || undefined,
+      userId: data.user_id,
+      createdAt: new Date(data.created_at)
+    }
+  },
+
+  async getByTaskId(taskId: string): Promise<TaskCompletionHistory[]> {
+    const userId = getCurrentUserId()
+    const { data, error } = await supabase
+      .from('task_completion_history')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('task_id', taskId)
+      .order('completed_at', { ascending: false })
+    
+    if (error) throw error
+    return data?.map(row => ({
+      id: row.id,
+      taskId: row.task_id,
+      taskTitle: row.task_title,
+      taskType: row.task_type,
+      projectId: row.project_id || undefined,
+      completedAt: new Date(row.completed_at),
+      estimatedHours: row.estimated_hours,
+      actualHours: row.actual_hours || undefined,
+      userId: row.user_id,
+      createdAt: new Date(row.created_at)
+    })) || []
+  },
+
+  async getByDateRange(startDate: Date, endDate: Date): Promise<TaskCompletionHistory[]> {
+    const userId = getCurrentUserId()
+    const { data, error } = await supabase
+      .from('task_completion_history')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('completed_at', startDate.toISOString())
+      .lte('completed_at', endDate.toISOString())
+      .order('completed_at', { ascending: false })
+    
+    if (error) throw error
+    return data?.map(row => ({
+      id: row.id,
+      taskId: row.task_id,
+      taskTitle: row.task_title,
+      taskType: row.task_type,
+      projectId: row.project_id || undefined,
+      completedAt: new Date(row.completed_at),
+      estimatedHours: row.estimated_hours,
+      actualHours: row.actual_hours || undefined,
+      userId: row.user_id,
+      createdAt: new Date(row.created_at)
+    })) || []
+  }
+}
+
+// 每日任务重置功能
+export async function resetDailyTasks(): Promise<void> {
+  const userId = getCurrentUserId()
+  const now = getBeijingTime()
+  
+  // 获取所有需要重置的任务（每日、每周、每月）
+  const { data: tasksToReset, error: fetchError } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('user_id', userId)
+    .in('task_type', ['daily', 'weekly', 'monthly'])
+    .eq('status', 'completed')
+  
+  if (fetchError) throw fetchError
+  
+  // 为每个完成的任务创建历史记录
+  for (const task of tasksToReset || []) {
+    // 根据任务类型判断是否需要重置
+    let shouldReset = false
+    const completedAt = new Date(task.completed_at)
+    
+    if (task.task_type === 'daily') {
+      // 每日任务：如果完成时间不是今天，则重置
+      shouldReset = !isBeijingToday(completedAt)
+    } else if (task.task_type === 'weekly') {
+      // 每周任务：如果完成时间超过7天，则重置
+      const daysDiff = Math.floor((now.getTime() - completedAt.getTime()) / (1000 * 60 * 60 * 24))
+      shouldReset = daysDiff >= 7
+    } else if (task.task_type === 'monthly') {
+      // 每月任务：如果完成时间不是本月，则重置
+      const nowMonth = now.getMonth()
+      const nowYear = now.getFullYear()
+      const completedMonth = completedAt.getMonth()
+      const completedYear = completedAt.getFullYear()
+      shouldReset = nowMonth !== completedMonth || nowYear !== completedYear
+    }
+    
+    if (shouldReset) {
+      // 创建完成历史记录
+      await taskCompletionHistoryService.create({
+        taskId: task.id,
+        taskTitle: task.title,
+        taskType: task.task_type,
+        projectId: task.project_id || undefined,
+        completedAt: completedAt,
+        estimatedHours: task.estimated_hours,
+        actualHours: task.actual_hours || undefined,
+        userId: userId
+      })
+      
+      // 重置任务状态
+      await supabase
+        .from('tasks')
+        .update({
+          status: 'pool',
+          completed_at: null,
+          actual_hours: null,
+          time_slot: null,
+          scheduled_start_time: null,
+          deadline: null
+        })
+        .eq('id', task.id)
+    }
+  }
+}
+
+export const createTaskCompletionHistory = taskCompletionHistoryService.create
+export const getTaskCompletionHistoryByTaskId = taskCompletionHistoryService.getByTaskId
+export const getTaskCompletionHistoryByDateRange = taskCompletionHistoryService.getByDateRange

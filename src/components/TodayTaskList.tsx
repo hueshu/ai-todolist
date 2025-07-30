@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useStore } from '@/lib/store'
+import { createTaskCompletionHistory } from '@/lib/database'
 import { TaskList } from './TaskList'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -303,7 +304,7 @@ function TaskItem({ task, onFocusMode }: { task: Task; onFocusMode?: (task: Task
     low: 'border-green-300 bg-green-50',
   }
   
-  const handleToggleStatus = (taskId?: string) => {
+  const handleToggleStatus = async (taskId?: string) => {
     const targetTaskId = taskId || task.id
     const targetTask = taskId ? tasks.find(t => t.id === taskId) : task
     if (!targetTask) return
@@ -312,7 +313,58 @@ function TaskItem({ task, onFocusMode }: { task: Task; onFocusMode?: (task: Task
       updateTask(targetTaskId, { status: 'scheduled', completedAt: undefined })
     } else {
       const completionTime = getBeijingTime()
-      updateTask(targetTaskId, { status: 'completed', completedAt: completionTime })
+      
+      // 检查是否是分段任务
+      if (targetTask.originalTaskId && targetTask.segmentIndex && targetTask.totalSegments) {
+        // 这是一个分段任务
+        console.log(`完成分段任务: ${targetTask.title} (${targetTask.segmentIndex}/${targetTask.totalSegments})`)
+        
+        // 只更新当前分段的状态
+        updateTask(targetTaskId, { status: 'completed', completedAt: completionTime })
+        
+        // 检查是否所有分段都已完成
+        const allSegments = tasks.filter(t => 
+          t.originalTaskId === targetTask.originalTaskId && 
+          t.id !== targetTaskId // 排除当前任务，因为我们刚刚更新了它
+        )
+        
+        const allSegmentsCompleted = allSegments.every(t => t.status === 'completed')
+        
+        if (allSegmentsCompleted && targetTask.segmentIndex === targetTask.totalSegments) {
+          // 如果这是最后一个分段且其他分段都已完成，更新原始任务
+          const originalTask = tasks.find(t => t.id === targetTask.originalTaskId)
+          if (originalTask) {
+            console.log(`所有分段已完成，更新原始任务: ${originalTask.title}`)
+            updateTask(targetTask.originalTaskId, { 
+              status: 'completed', 
+              completedAt: completionTime,
+              actualHours: originalTask.estimatedHours // 设置实际完成时间为预估时间
+            })
+          }
+        }
+      } else {
+        // 普通任务，直接完成
+        updateTask(targetTaskId, { status: 'completed', completedAt: completionTime })
+        
+        // 为周期性任务创建完成历史记录
+        if (['daily', 'weekly', 'monthly'].includes(targetTask.taskType)) {
+          try {
+            await createTaskCompletionHistory({
+              taskId: targetTask.id,
+              taskTitle: targetTask.title,
+              taskType: targetTask.taskType,
+              projectId: targetTask.projectId,
+              completedAt: completionTime,
+              estimatedHours: targetTask.estimatedHours,
+              actualHours: targetTask.actualHours,
+              userId: 'shared-user-account'
+            })
+            console.log(`已创建${targetTask.taskType}任务的完成历史记录`)
+          } catch (error) {
+            console.error('创建任务完成历史记录失败:', error)
+          }
+        }
+      }
       
       // 如果任务有时间安排，重新计算后续任务时间
       if (targetTask.timeSlot) {

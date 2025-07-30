@@ -38,6 +38,24 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
     setIsPaused(false)
     // 不改变任务状态，只是专注模式
     
+    // 请求通知权限（作为备用方案）
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+    
+    // 预加载音频上下文（解决首次播放延迟问题）
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      // 创建一个静音的短音来激活音频上下文
+      const buffer = audioContext.createBuffer(1, 1, 22050)
+      const source = audioContext.createBufferSource()
+      source.buffer = buffer
+      source.connect(audioContext.destination)
+      source.start()
+    } catch (e) {
+      console.log('音频上下文预加载失败:', e)
+    }
+    
     // 全屏变化监听
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement)
@@ -109,28 +127,51 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
   const playNotificationSound = () => {
     if (isMuted) return
     
-    // 尝试播放音频文件
-    if (audioRef.current) {
-      audioRef.current.play().catch(() => {
-        // 如果播放失败，使用Web Audio API生成提示音
-        try {
-          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-          const oscillator = audioContext.createOscillator()
-          const gainNode = audioContext.createGain()
-          
-          oscillator.connect(gainNode)
-          gainNode.connect(audioContext.destination)
-          
-          oscillator.frequency.value = 800 // 频率
-          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
-          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5)
-          
-          oscillator.start(audioContext.currentTime)
-          oscillator.stop(audioContext.currentTime + 0.5)
-        } catch (error) {
-          console.error('无法播放提示音:', error)
-        }
-      })
+    // 首先尝试使用Web Audio API生成提示音（更可靠）
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      
+      // 创建两个振荡器产生和谐的声音
+      const oscillator1 = audioContext.createOscillator()
+      const oscillator2 = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+      
+      // 连接节点
+      oscillator1.connect(gainNode)
+      oscillator2.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+      
+      // 设置频率 (C5 和 E5 形成大三度)
+      oscillator1.frequency.value = 523.25 // C5
+      oscillator2.frequency.value = 659.25 // E5
+      
+      // 设置音量包络
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5)
+      
+      // 播放声音
+      oscillator1.start(audioContext.currentTime)
+      oscillator2.start(audioContext.currentTime)
+      oscillator1.stop(audioContext.currentTime + 0.5)
+      oscillator2.stop(audioContext.currentTime + 0.5)
+      
+      console.log('提示音播放成功')
+    } catch (error) {
+      console.error('Web Audio API 播放失败:', error)
+      
+      // 如果Web Audio API失败，尝试播放音频文件
+      if (audioRef.current) {
+        audioRef.current.play().catch((err) => {
+          console.error('音频文件播放也失败:', err)
+          // 最后的备选方案：使用系统通知API
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('任务时间到！', {
+              body: '太棒了！继续保持这种专注力！🎉',
+              icon: '/favicon.ico'
+            })
+          }
+        })
+      }
     }
   }
 
@@ -167,7 +208,43 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
   }
 
   const handleComplete = () => {
-    onComplete()
+    // 获取所有任务以检查分段情况
+    const tasks = useStore.getState().tasks
+    const completionTime = getBeijingTime()
+    
+    // 检查是否是分段任务
+    if (task.originalTaskId && task.segmentIndex && task.totalSegments) {
+      // 这是一个分段任务
+      console.log(`完成分段任务: ${task.title} (${task.segmentIndex}/${task.totalSegments})`)
+      
+      // 只更新当前分段的状态
+      updateTask(task.id, { status: 'completed', completedAt: completionTime })
+      
+      // 检查是否所有分段都已完成
+      const allSegments = tasks.filter(t => 
+        t.originalTaskId === task.originalTaskId && 
+        t.id !== task.id // 排除当前任务
+      )
+      
+      const allSegmentsCompleted = allSegments.every(t => t.status === 'completed')
+      
+      if (allSegmentsCompleted && task.segmentIndex === task.totalSegments) {
+        // 如果这是最后一个分段且其他分段都已完成，更新原始任务
+        const originalTask = tasks.find(t => t.id === task.originalTaskId)
+        if (originalTask) {
+          console.log(`所有分段已完成，更新原始任务: ${originalTask.title}`)
+          updateTask(task.originalTaskId, { 
+            status: 'completed', 
+            completedAt: completionTime,
+            actualHours: originalTask.estimatedHours
+          })
+        }
+      }
+    } else {
+      // 普通任务，调用传入的完成回调
+      onComplete()
+    }
+    
     onClose()
   }
 

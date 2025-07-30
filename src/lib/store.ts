@@ -16,7 +16,8 @@ import {
   getIndustries,
   createIndustry as dbCreateIndustry,
   updateIndustry as dbUpdateIndustry,
-  deleteIndustry as dbDeleteIndustry
+  deleteIndustry as dbDeleteIndustry,
+  resetDailyTasks
 } from './database'
 
 interface AppState {
@@ -115,6 +116,15 @@ export const useStore = create<AppState>((set, get) => ({
   },
   
   loadAll: async () => {
+    try {
+      // 先执行每日任务重置
+      await resetDailyTasks()
+      console.log('每日任务重置完成')
+    } catch (error) {
+      console.error('每日任务重置失败:', error)
+    }
+    
+    // 然后加载所有数据
     const { loadTasks, loadProjects, loadFixedEvents, loadIndustries } = get()
     await Promise.all([
       loadTasks(),

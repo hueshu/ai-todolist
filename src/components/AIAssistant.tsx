@@ -24,6 +24,7 @@ export function AIAssistant() {
   const fixedEvents = useStore((state) => state.fixedEvents)
   const preferences = useStore((state) => state.preferences)
   const updateTask = useStore((state) => state.updateTask)
+  const addTask = useStore((state) => state.addTask)
   const updatePreferences = useStore((state) => state.updatePreferences)
   
   const handleGeneratePlan = async () => {
@@ -129,7 +130,26 @@ export function AIAssistant() {
   const applyPlan = () => {
     if (!dailyPlan) return
     
-    // 将计划中的任务更新为 scheduled 状态
+    // 统计每个任务被安排的次数
+    const taskScheduleCount: Record<string, number> = {}
+    const taskTotalSegments: Record<string, number> = {}
+    
+    // 第一遍：统计每个任务的分段数
+    dailyPlan.schedule.forEach((item) => {
+      if (item.task.id !== 'break') {
+        taskScheduleCount[item.task.id] = (taskScheduleCount[item.task.id] || 0) + 1
+      }
+    })
+    
+    // 计算每个任务的总分段数
+    Object.keys(taskScheduleCount).forEach(taskId => {
+      taskTotalSegments[taskId] = taskScheduleCount[taskId]
+    })
+    
+    // 重置计数器用于分配段索引
+    const taskSegmentIndex: Record<string, number> = {}
+    
+    // 第二遍：应用计划
     dailyPlan.schedule.forEach((item) => {
       if (item.task.id !== 'break') {
         // 解析时间段，设置deadline和开始时间
@@ -143,12 +163,46 @@ export function AIAssistant() {
         const endDate = getBeijingTime()
         endDate.setHours(endHours, endMinutes, 0, 0)
         
-        updateTask(item.task.id, {
-          status: 'scheduled',
-          deadline: endDate,
-          scheduledStartTime: startDate, // 新增开始时间字段
-          timeSlot: item.timeSlot // 新增时间段信息
-        })
+        const taskId = item.task.id
+        const totalSegments = taskTotalSegments[taskId]
+        
+        // 如果任务有多个分段
+        if (totalSegments > 1) {
+          taskSegmentIndex[taskId] = (taskSegmentIndex[taskId] || 0) + 1
+          const segmentIndex = taskSegmentIndex[taskId]
+          
+          // 为分段任务创建新的任务ID
+          const segmentTaskId = `${taskId}_segment_${segmentIndex}`
+          
+          // 使用addTask创建新的分段任务，而不是更新原始任务
+          addTask({
+            id: segmentTaskId,
+            title: `${item.task.title} (${segmentIndex}/${totalSegments})`,
+            description: item.task.description,
+            projectId: item.task.projectId,
+            priority: item.task.priority,
+            estimatedHours: item.task.estimatedHours / totalSegments, // 分配时间
+            status: 'scheduled',
+            tags: item.task.tags,
+            dependencies: item.task.dependencies,
+            taskType: item.task.taskType,
+            createdAt: getBeijingTime(),
+            deadline: endDate,
+            scheduledStartTime: startDate,
+            timeSlot: item.timeSlot,
+            originalTaskId: taskId,
+            segmentIndex: segmentIndex,
+            totalSegments: totalSegments
+          })
+        } else {
+          // 单个时间段的任务，正常更新
+          updateTask(taskId, {
+            status: 'scheduled',
+            deadline: endDate,
+            scheduledStartTime: startDate,
+            timeSlot: item.timeSlot
+          })
+        }
       }
     })
     
