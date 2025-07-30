@@ -388,17 +388,6 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
                       )}
                     </div>
                     
-                    {/* 操作按钮 */}
-                    {task.status === 'pool' && (
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => handleUpdateTask(task.id, { status: 'scheduled' })}
-                        className="text-xs"
-                      >
-                        安排任务
-                      </Button>
-                    )}
                   </div>
                 </div>
               </CardContent>
