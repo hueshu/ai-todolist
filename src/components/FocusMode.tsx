@@ -24,7 +24,6 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
   const [showCompletion, setShowCompletion] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [originalStatus] = useState(task.status) // 保存原始状态
   const audioRef = useRef<HTMLAudioElement>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -37,7 +36,7 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
     // 自动开始计时
     setIsRunning(true)
     setIsPaused(false)
-    updateTask(task.id, { status: 'in-progress' })
+    // 不改变任务状态，只是专注模式
     
     // 全屏变化监听
     const handleFullscreenChange = () => {
@@ -254,11 +253,7 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => {
-                    // 恢复原始状态
-                    updateTask(task.id, { status: originalStatus })
-                    onClose()
-                  }}
+                  onClick={onClose}
                   className="text-gray-400 hover:text-white"
                   title="关闭"
                 >
@@ -305,11 +300,7 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
             {showControls && (
               <div className="flex justify-center gap-4">
                 <Button
-                  onClick={() => {
-                    // 恢复原始状态
-                    updateTask(task.id, { status: originalStatus })
-                    onClose()
-                  }}
+                  onClick={onClose}
                   size="lg"
                   variant="outline"
                   className="border-gray-600 text-gray-300 hover:bg-gray-800"
