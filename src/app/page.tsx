@@ -10,6 +10,7 @@ import { AIAssistant } from '@/components/AIAssistant'
 import { FixedEventManager } from '@/components/FixedEventManager'
 import { DatabaseTest } from '@/components/DatabaseTest'
 import { TaskPoolTabs } from '@/components/TaskPoolTabs'
+import { TaskStatistics } from '@/components/TaskStatistics'
 import { useDataLoader } from '@/hooks/useDataLoader'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Brain, Calendar, FolderOpen, Home as HomeIcon, BarChart3, ListTodo, Clock } from 'lucide-react'
@@ -32,7 +33,7 @@ export default function Home() {
           <div className="flex justify-center">
             {/* 移动端标签栏 - 只显示3个主要选项 */}
             <div className="block md:hidden w-full max-w-sm mx-auto px-2">
-              <TabsList className="grid grid-cols-3 gap-1 bg-white/90 backdrop-blur-sm shadow-lg rounded-xl p-1 w-full">
+              <TabsList className="grid grid-cols-4 gap-1 bg-white/90 backdrop-blur-sm shadow-lg rounded-xl p-1 w-full">
                 <TabsTrigger 
                   value="dashboard" 
                   className="flex flex-col items-center gap-1 px-2 py-3 text-xs rounded-lg transition-all hover:bg-blue-50 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
@@ -53,6 +54,13 @@ export default function Home() {
                 >
                   <Brain className="w-4 h-4" />
                   <span className="text-xs">AI助手</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="analytics" 
+                  className="flex flex-col items-center gap-1 px-2 py-3 text-xs rounded-lg transition-all hover:bg-blue-50 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  <span className="text-xs">统计</span>
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -186,15 +194,7 @@ export default function Home() {
           {/* 数据分析 */}
           <TabsContent value="analytics" className="space-y-3 sm:space-y-6">
             <div className="bg-white/80 backdrop-blur-sm rounded-lg sm:rounded-2xl shadow-lg border border-white/20 p-3 sm:p-6">
-              <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-6">
-                <BarChart3 className="w-4 h-4 sm:w-6 sm:h-6 text-red-600" />
-                <h2 className="text-lg sm:text-2xl font-bold text-gray-800">数据分析</h2>
-              </div>
-              <div className="text-center py-8 sm:py-12">
-                <BarChart3 className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
-                <p className="text-gray-500 text-base sm:text-lg">功能开发中...</p>
-                <p className="text-gray-400 text-xs sm:text-sm mt-2">即将为您提供详细的任务完成统计和效率分析</p>
-              </div>
+              <TaskStatistics />
             </div>
           </TabsContent>
         </Tabs>

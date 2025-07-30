@@ -148,3 +148,16 @@ export function getBeijingHourMinute(): { hour: number; minute: number } {
   const [hour, minute] = beijingTimeStr.split(':').map(Number)
   return { hour, minute }
 }
+
+/**
+ * 格式化日期为北京时间 YYYY-MM-DD 格式
+ */
+export function formatBeijingDate(date: Date | string): string {
+  const inputDate = typeof date === 'string' ? new Date(date) : date
+  return inputDate.toLocaleDateString('zh-CN', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).replace(/\//g, '-')
+}
