@@ -20,6 +20,7 @@ export function TodayTaskList() {
   const [focusTask, setFocusTask] = useState<Task | null>(null)
   const tasks = useStore((state) => state.tasks)
   const addTask = useStore((state) => state.addTask)
+  const updateTask = useStore((state) => state.updateTask)
   
   // 获取今日任务：包括今天安排的、今天完成的，或截止日期是今天的
   const todayTasks = tasks.filter(task => {
