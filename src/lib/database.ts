@@ -99,24 +99,27 @@ export const taskService = {
   },
 
   async update(id: string, updates: Partial<Task>): Promise<Task> {
+    const updateData: any = {}
+    
+    // 只更新提供的字段
+    if (updates.title !== undefined) updateData.title = updates.title
+    if (updates.description !== undefined) updateData.description = updates.description || null
+    if (updates.projectId !== undefined) updateData.project_id = updates.projectId || null
+    if (updates.priority !== undefined) updateData.priority = updates.priority
+    if (updates.estimatedHours !== undefined) updateData.estimated_hours = updates.estimatedHours
+    if (updates.actualHours !== undefined) updateData.actual_hours = updates.actualHours || null
+    if (updates.deadline !== undefined) updateData.deadline = updates.deadline?.toISOString() || null
+    if (updates.scheduledStartTime !== undefined) updateData.scheduled_start_time = updates.scheduledStartTime?.toISOString() || null
+    if (updates.timeSlot !== undefined) updateData.time_slot = updates.timeSlot || null
+    if (updates.status !== undefined) updateData.status = updates.status
+    if (updates.tags !== undefined) updateData.tags = updates.tags
+    if (updates.dependencies !== undefined) updateData.dependencies = updates.dependencies
+    if (updates.taskType !== undefined) updateData.task_type = updates.taskType
+    if (updates.completedAt !== undefined) updateData.completed_at = updates.completedAt?.toISOString() || null
+    
     const { data, error } = await supabase
       .from('tasks')
-      .update({
-        title: updates.title,
-        description: updates.description || null,
-        project_id: updates.projectId || null,
-        priority: updates.priority,
-        estimated_hours: updates.estimatedHours,
-        actual_hours: updates.actualHours || null,
-        deadline: updates.deadline?.toISOString() || null,
-        scheduled_start_time: updates.scheduledStartTime?.toISOString() || null,
-        time_slot: updates.timeSlot || null,
-        status: updates.status,
-        tags: updates.tags,
-        dependencies: updates.dependencies,
-        task_type: updates.taskType,
-        completed_at: updates.completedAt?.toISOString() || null,
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single()
