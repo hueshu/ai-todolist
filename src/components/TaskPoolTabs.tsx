@@ -21,7 +21,18 @@ export function TaskPoolTabs() {
   
   // 手动重置每日任务
   const handleResetDailyTasks = async () => {
-    if (!confirm('确定要重置所有周期性任务吗？这将把已完成的每日、每周、每月任务恢复到待处理状态。')) {
+    // 先检查有多少任务需要重置
+    const completedPeriodicTasks = tasks.filter(task => 
+      task.status === 'completed' && 
+      ['daily', 'weekly', 'monthly'].includes(task.taskType)
+    )
+    
+    if (completedPeriodicTasks.length === 0) {
+      alert('没有需要重置的周期性任务')
+      return
+    }
+    
+    if (!confirm(`找到 ${completedPeriodicTasks.length} 个已完成的周期性任务。\n\n确定要检查并重置符合条件的任务吗？\n\n重置规则：\n- 每日任务：昨天及之前完成的\n- 每周任务：7天前完成的\n- 每月任务：上月完成的`)) {
       return
     }
     
@@ -29,10 +40,23 @@ export function TaskPoolTabs() {
     try {
       await resetDailyTasks()
       await loadTasks() // 重新加载任务列表
-      alert('周期性任务已重置！')
+      
+      // 重新检查，看看实际重置了多少个
+      const stillCompleted = tasks.filter(task => 
+        task.status === 'completed' && 
+        ['daily', 'weekly', 'monthly'].includes(task.taskType)
+      ).length
+      
+      const resetCount = completedPeriodicTasks.length - stillCompleted
+      
+      if (resetCount > 0) {
+        alert(`成功重置 ${resetCount} 个周期性任务！`)
+      } else {
+        alert('没有任务需要重置（所有任务的完成时间都还不符合重置条件）')
+      }
     } catch (error) {
       console.error('重置任务失败:', error)
-      alert('重置任务失败，请重试')
+      alert('重置任务失败，请查看控制台了解详情')
     } finally {
       setIsResetting(false)
     }

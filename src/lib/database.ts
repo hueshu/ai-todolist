@@ -619,6 +619,8 @@ export async function resetDailyTasks(): Promise<void> {
   const userId = getCurrentUserId()
   const now = getBeijingTime()
   
+  console.log('[重置任务] 开始执行，用户ID:', userId, '当前时间:', now.toLocaleString('zh-CN'))
+  
   // 获取所有需要重置的任务（每日、每周、每月）
   const { data: tasksToReset, error: fetchError } = await supabase
     .from('tasks')
@@ -627,21 +629,31 @@ export async function resetDailyTasks(): Promise<void> {
     .in('task_type', ['daily', 'weekly', 'monthly'])
     .eq('status', 'completed')
   
-  if (fetchError) throw fetchError
+  if (fetchError) {
+    console.error('[重置任务] 获取任务失败:', fetchError)
+    throw fetchError
+  }
   
+  console.log('[重置任务] 找到已完成的周期性任务数量:', tasksToReset?.length || 0)
+  
+  let resetCount = 0
   // 为每个完成的任务创建历史记录
   for (const task of tasksToReset || []) {
     // 根据任务类型判断是否需要重置
     let shouldReset = false
     const completedAt = new Date(task.completed_at)
     
+    console.log(`[重置任务] 检查任务: ${task.title}, 类型: ${task.task_type}, 完成时间: ${completedAt.toLocaleString('zh-CN')}`)
+    
     if (task.task_type === 'daily') {
       // 每日任务：如果完成时间不是今天，则重置
       shouldReset = !isBeijingToday(completedAt)
+      console.log(`[重置任务] 每日任务，是否是今天: ${isBeijingToday(completedAt)}, 需要重置: ${shouldReset}`)
     } else if (task.task_type === 'weekly') {
       // 每周任务：如果完成时间超过7天，则重置
       const daysDiff = Math.floor((now.getTime() - completedAt.getTime()) / (1000 * 60 * 60 * 24))
       shouldReset = daysDiff >= 7
+      console.log(`[重置任务] 每周任务，距今天数: ${daysDiff}, 需要重置: ${shouldReset}`)
     } else if (task.task_type === 'monthly') {
       // 每月任务：如果完成时间不是本月，则重置
       const nowMonth = now.getMonth()
@@ -649,23 +661,30 @@ export async function resetDailyTasks(): Promise<void> {
       const completedMonth = completedAt.getMonth()
       const completedYear = completedAt.getFullYear()
       shouldReset = nowMonth !== completedMonth || nowYear !== completedYear
+      console.log(`[重置任务] 每月任务，当前: ${nowYear}-${nowMonth+1}, 完成: ${completedYear}-${completedMonth+1}, 需要重置: ${shouldReset}`)
     }
     
     if (shouldReset) {
-      // 创建完成历史记录
-      await taskCompletionHistoryService.create({
-        taskId: task.id,
-        taskTitle: task.title,
-        taskType: task.task_type,
-        projectId: task.project_id || undefined,
-        completedAt: completedAt,
-        estimatedHours: task.estimated_hours,
-        actualHours: task.actual_hours || undefined,
-        userId: userId
-      })
+      try {
+        // 创建完成历史记录
+        await taskCompletionHistoryService.create({
+          taskId: task.id,
+          taskTitle: task.title,
+          taskType: task.task_type,
+          projectId: task.project_id || undefined,
+          completedAt: completedAt,
+          estimatedHours: task.estimated_hours,
+          actualHours: task.actual_hours || undefined,
+          userId: userId
+        })
+        console.log(`[重置任务] 已创建历史记录: ${task.title}`)
+      } catch (historyError) {
+        console.error(`[重置任务] 创建历史记录失败: ${task.title}`, historyError)
+        // 继续执行，不影响任务重置
+      }
       
       // 重置任务状态
-      await supabase
+      const { error: updateError } = await supabase
         .from('tasks')
         .update({
           status: 'pool',
@@ -673,11 +692,24 @@ export async function resetDailyTasks(): Promise<void> {
           actual_hours: null,
           time_slot: null,
           scheduled_start_time: null,
-          deadline: null
+          deadline: null,
+          original_task_id: null,
+          segment_index: null,
+          total_segments: null
         })
         .eq('id', task.id)
+        .eq('user_id', userId)
+      
+      if (updateError) {
+        console.error(`[重置任务] 更新任务状态失败: ${task.title}`, updateError)
+      } else {
+        console.log(`[重置任务] 成功重置任务: ${task.title}`)
+        resetCount++
+      }
     }
   }
+  
+  console.log(`[重置任务] 完成，共重置 ${resetCount} 个任务`)
 }
 
 export const createTaskCompletionHistory = taskCompletionHistoryService.create
