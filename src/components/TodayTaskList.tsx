@@ -320,7 +320,7 @@ function TaskItem({ task, onFocusMode }: { task: Task; onFocusMode?: (task: Task
           variant="ghost"
           size="icon"
           className="shrink-0"
-          onClick={handleToggleStatus}
+          onClick={() => handleToggleStatus()}
         >
           {task.status === 'completed' ? (
             <CheckCircle className="w-5 h-5 text-green-500" />
