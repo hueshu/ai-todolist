@@ -10,10 +10,6 @@ import { AIAssistant } from '@/components/AIAssistant'
 import { FixedEventManager } from '@/components/FixedEventManager'
 import { DatabaseTest } from '@/components/DatabaseTest'
 import { TaskPoolTabs } from '@/components/TaskPoolTabs'
-import { TaskRecovery } from '@/components/TaskRecovery'
-import { AllTasksDebug } from '@/components/AllTasksDebug'
-import { TodayTasksDebug } from '@/components/TodayTasksDebug'
-import { TaskProjectAssigner } from '@/components/TaskProjectAssigner'
 import { useDataLoader } from '@/hooks/useDataLoader'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Brain, Calendar, FolderOpen, Home as HomeIcon, BarChart3, ListTodo, Clock } from 'lucide-react'
@@ -120,18 +116,6 @@ export default function Home() {
             <div className="bg-white/80 backdrop-blur-sm rounded-lg sm:rounded-2xl shadow-lg border border-white/20 p-3 sm:p-6">
               <TodayTaskList />
             </div>
-            
-            {/* 任务项目关联工具 */}
-            <TaskProjectAssigner />
-            
-            {/* 任务恢复工具 */}
-            <TaskRecovery />
-            
-            {/* 所有任务调试视图 */}
-            <AllTasksDebug />
-            
-            {/* 今日任务调试视图 */}
-            <TodayTasksDebug />
             
             {/* 系统检测 - 仅在开发环境显示 */}
             {process.env.NODE_ENV === 'development' && (
