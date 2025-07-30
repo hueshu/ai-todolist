@@ -31,7 +31,6 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
   const [showBatchActions, setShowBatchActions] = useState(false)
   const [sortBy, setSortBy] = useState<'priority' | 'deadline' | 'created'>(filter === 'pool' ? 'created' : 'priority')
   const [filterPriority, setFilterPriority] = useState<string>('all')
-  const [showCompleted, setShowCompleted] = useState(true)
   
   const tasks = useStore((state) => state.tasks)
   const projects = useStore((state) => state.projects)
@@ -58,13 +57,7 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
 
   const filteredTasks = tasks
     .filter(task => {
-      // 任务池视图显示所有任务，但可以通过 showCompleted 控制是否显示已完成的
-      if (filter === 'pool') {
-        if (!showCompleted && task.status === 'completed') return false
-      } else if (filter !== 'all' && task.status !== filter) {
-        return false
-      }
-      
+      if (filter !== 'all' && task.status !== filter) return false
       if (filterPriority !== 'all' && task.priority !== filterPriority) return false
       return true
     })
@@ -173,16 +166,6 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
         </div>
         
         <div className="flex items-center gap-2">
-          {filter === 'pool' && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowCompleted(!showCompleted)}
-              className="text-xs"
-            >
-              {showCompleted ? '隐藏已完成' : '显示已完成'}
-            </Button>
-          )}
           <span className="text-sm text-gray-600">
             共 {filteredTasks.length} 个任务
           </span>
