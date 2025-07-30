@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { isToday } from 'date-fns'
-import { Calendar, Clock, CheckCircle, Circle, AlertTriangle, Plus, Target } from 'lucide-react'
+import { Calendar, Clock, CheckCircle, Circle, AlertTriangle, Plus, Target, Undo2 } from 'lucide-react'
 import { cn, recalculateSubsequentTasks } from '@/lib/utils'
 import { Task } from '@/types'
 import { v4 as uuidv4 } from 'uuid'
@@ -302,6 +302,16 @@ function TaskItem({ task, onFocusMode }: { task: Task; onFocusMode?: (task: Task
     }
   }
   
+  // 撤回任务到任务池
+  const handleReturnToPool = () => {
+    updateTask(task.id, { 
+      status: 'pool',
+      timeSlot: undefined,
+      scheduledStartTime: undefined,
+      deadline: undefined
+    })
+  }
+  
   return (
     <Card 
       className={cn(
@@ -362,11 +372,26 @@ function TaskItem({ task, onFocusMode }: { task: Task; onFocusMode?: (task: Task
           </div>
         </div>
         
-        <div className="text-xs font-medium">
-          {task.priority === 'urgent' && <span className="text-red-600">紧急</span>}
-          {task.priority === 'high' && <span className="text-orange-600">高</span>}
-          {task.priority === 'medium' && <span className="text-yellow-600">中</span>}
-          {task.priority === 'low' && <span className="text-green-600">低</span>}
+        <div className="flex items-center gap-2">
+          <div className="text-xs font-medium">
+            {task.priority === 'urgent' && <span className="text-red-600">紧急</span>}
+            {task.priority === 'high' && <span className="text-orange-600">高</span>}
+            {task.priority === 'medium' && <span className="text-yellow-600">中</span>}
+            {task.priority === 'low' && <span className="text-green-600">低</span>}
+          </div>
+          
+          {/* 撤回按钮 - 只对未完成的任务显示 */}
+          {task.status !== 'completed' && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-gray-500 hover:text-gray-700"
+              onClick={handleReturnToPool}
+              title="撤回到任务池"
+            >
+              <Undo2 className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
