@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import { Task } from '@/types'
-import { X, Play, Pause, RotateCcw, Volume2, VolumeX, CheckCircle, Maximize2, Minimize2 } from 'lucide-react'
+import { X, Volume2, VolumeX, CheckCircle, Maximize2, Minimize2 } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { getBeijingTime } from '@/lib/timezone'
 
@@ -32,6 +32,11 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
   useEffect(() => {
     setMounted(true)
     document.body.style.overflow = 'hidden'
+    
+    // 自动开始计时
+    setIsRunning(true)
+    setIsPaused(false)
+    updateTask(task.id, { status: 'in-progress' })
     
     // 全屏变化监听
     const handleFullscreenChange = () => {
@@ -137,8 +142,6 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
   const handleStart = () => {
     setIsRunning(true)
     setIsPaused(false)
-    // 更新任务状态为进行中
-    updateTask(task.id, { status: 'in-progress' })
   }
 
   const handlePause = () => {
@@ -172,6 +175,10 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
     const totalMinutes = Math.floor(seconds / 60)
     return `${totalMinutes}分钟`
   }
+  
+  // 计算进度百分比
+  const progressPercent = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0
+  const showControls = progressPercent >= 50 // 时间过半后显示控制按钮
 
   // 全屏功能
   const toggleFullscreen = async () => {
@@ -206,7 +213,6 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
     }
   }
 
-  const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0
 
   // 只在客户端渲染
   if (!mounted) return null
@@ -281,7 +287,7 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
                   strokeWidth="8"
                   fill="none"
                   strokeDasharray={`${2 * Math.PI * 90}`}
-                  strokeDashoffset={`${2 * Math.PI * 90 * (1 - progress / 100)}`}
+                  strokeDashoffset={`${2 * Math.PI * 90 * (1 - progressPercent / 100)}`}
                   className="text-blue-500 transition-all duration-1000"
                 />
               </svg>
@@ -290,46 +296,28 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
               </div>
             </div>
 
-            {/* 控制按钮 */}
-            <div className="flex justify-center gap-4">
-              {!isRunning ? (
+            {/* 控制按钮 - 时间过半后才显示 */}
+            {showControls && (
+              <div className="flex justify-center gap-4">
                 <Button
-                  onClick={handleStart}
+                  onClick={onClose}
                   size="lg"
-                  className="bg-blue-600 hover:bg-blue-700"
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-800"
                 >
-                  <Play className="w-5 h-5 mr-2" />
-                  开始
+                  <X className="w-5 h-5 mr-2" />
+                  关闭
                 </Button>
-              ) : isPaused ? (
                 <Button
-                  onClick={handleResume}
+                  onClick={handleComplete}
                   size="lg"
                   className="bg-green-600 hover:bg-green-700"
                 >
-                  <Play className="w-5 h-5 mr-2" />
-                  继续
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  完成
                 </Button>
-              ) : (
-                <Button
-                  onClick={handlePause}
-                  size="lg"
-                  className="bg-yellow-600 hover:bg-yellow-700"
-                >
-                  <Pause className="w-5 h-5 mr-2" />
-                  暂停
-                </Button>
-              )}
-              <Button
-                onClick={handleReset}
-                size="lg"
-                variant="outline"
-                className="border-gray-600 text-gray-300 hover:bg-gray-800"
-              >
-                <RotateCcw className="w-5 h-5 mr-2" />
-                重置
-              </Button>
-            </div>
+              </div>
+            )}
 
             {/* 完成提示 */}
             {showCompletion && (
@@ -337,7 +325,7 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
                 <div className="text-center space-y-6">
                   <CheckCircle className="w-16 h-16 text-green-500 mx-auto animate-bounce" />
                   <h3 className="text-2xl font-bold">时间到！</h3>
-                  <p className="text-gray-400">您已完成本次专注</p>
+                  <p className="text-gray-400">太棒了！继续保持这种专注力！🎉</p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <Button
                       onClick={handleAddFiveMinutes}
@@ -361,11 +349,11 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
               <div className="w-full bg-gray-700 rounded-full h-2">
                 <div
                   className="bg-blue-500 h-2 rounded-full transition-all duration-1000"
-                  style={{ width: `${progress}%` }}
+                  style={{ width: `${progressPercent}%` }}
                 />
               </div>
               <p className="text-center text-sm text-gray-400 mt-2">
-                {Math.round(progress)}% 完成
+                {Math.round(progressPercent)}% 完成
               </p>
             </div>
           </div>
