@@ -205,38 +205,51 @@ ${tasksWithFullInfo.slice(0, 20).map(t =>
 ${body.userPreferences ? `用户偏好：${body.userPreferences}\n` : ''}
 ${body.strictRequirements ? `⚠️ 严格执行要求（必须遵守）：${body.strictRequirements}\n` : ''}
 
-安排原则（按优先级排序）：
-1. 必须遵守：固定事件时间（如吃饭、会议等）不能被任何任务占用
-2. 必须遵守：严格执行要求中的内容必须完全满足
-3. 必须遵守：每个任务的时长必须根据其estimatedHours来安排（如3h的任务需要3小时时间段）
-4. 优先安排：紧急任务、每日/每周重复任务、有截止日期的任务
-5. 考虑项目优先级和用户偏好，但保持灵活性
-6. 长任务可分段执行（如3小时任务可分为1.5h+1.5h），但总时长必须等于estimatedHours
-7. 遵守任务依赖关系
-8. 在精力好的时段安排重要任务
+核心规则（违反任何一条都不可接受）：
+1. 🚫 固定事件（吃饭时间等）绝对不能被占用或删除
+2. ⏱️ 任务时长必须严格等于estimatedHours：
+   - 1小时任务 = 必须安排满1小时（可以是2个30分钟）
+   - 3小时任务 = 必须安排满3小时（可以分段如1.5h+1.5h或1h+1h+1h）
+   - 不允许缩短或延长任务时间
+3. 📊 优先级综合考虑（都很重要）：
+   - 任务优先级：urgent > high > medium > low
+   - 项目优先级：考虑项目的重要性和displayOrder
+   - 两者结合：高优先级项目的任务应优先安排
 
-重要提醒：
-- 固定事件（如午餐、晚餐）是不可协商的，必须保留这些时间段
-- 任务的estimatedHours必须被尊重，不能随意缩短或延长
+安排策略：
+1. 先确保所有固定事件时间被保护
+2. 优先安排紧急(urgent)和高优先级(high)任务
+3. 重要项目的任务优先获得好的时间段
+4. 每个任务必须获得其完整的estimatedHours时间
+5. 可以将任务分成30分钟的番茄钟，但总时长不变
+
+⚠️ 最后检查：
+- 每个固定事件都被保留了吗？
+- 每个任务都获得了完整的预估时间吗？
+- 优先级高的任务和项目是否被优先安排？
 
 返回JSON格式要求：
 1. taskId必须使用上面任务列表中的实际ID（方括号内的ID值）
 2. 不要使用任务标题作为taskId
 3. 休息时间的taskId固定为"break"
 
-示例返回格式：
+示例返回格式（注意任务时长的安排）：
 {
   "schedule": [
-    {"timeSlot": "09:00-09:30", "taskId": "使用上面列表中[ID: xxx]的xxx部分", "type": "focus", "reason": "高优先级任务"},
-    {"timeSlot": "09:30-09:35", "taskId": "break", "type": "break", "reason": "休息时间"},
-    {"timeSlot": "09:35-10:05", "taskId": "另一个实际的任务ID", "type": "regular", "reason": "常规任务"}
+    {"timeSlot": "09:00-09:30", "taskId": "task-id-1", "type": "focus", "reason": "高优先级任务-第1部分(0.5h)"},
+    {"timeSlot": "09:30-10:00", "taskId": "task-id-1", "type": "focus", "reason": "高优先级任务-第2部分(0.5h)"}, 
+    {"timeSlot": "10:00-10:05", "taskId": "break", "type": "break", "reason": "休息5分钟"},
+    {"timeSlot": "10:05-11:05", "taskId": "task-id-2", "type": "regular", "reason": "1小时任务完整安排"},
+    {"timeSlot": "11:05-11:10", "taskId": "break", "type": "break", "reason": "休息5分钟"},
+    {"timeSlot": "11:10-12:00", "taskId": "task-id-3", "type": "regular", "reason": "项目A的任务(0.83h)"},
+    {"timeSlot": "12:00-13:00", "taskId": "lunch", "type": "break", "reason": "午餐时间-固定事件"}
   ],
-  "suggestions": ["最多3条建议"],
-  "estimatedProductivity": 75,
+  "suggestions": ["记住：每个任务的总时长必须等于其estimatedHours"],
+  "estimatedProductivity": 85,
   "projectAnalysis": {
-    "highValueProjects": "今日重点项目",
-    "timeAllocation": "时间分配策略",
-    "riskWarning": "潜在风险"
+    "highValueProjects": "重点关注的高优先级项目",
+    "timeAllocation": "根据任务和项目优先级分配时间",
+    "riskWarning": "检查是否所有任务都获得了足够时间"
   }
 }`
 
