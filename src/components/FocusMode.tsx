@@ -169,13 +169,8 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
   }
 
   const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    const secs = seconds % 60
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-    }
-    return `${minutes}:${secs.toString().padStart(2, '0')}`
+    const totalMinutes = Math.floor(seconds / 60)
+    return `${totalMinutes}分钟`
   }
 
   // 全屏功能
@@ -229,7 +224,7 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
           <div className="space-y-6">
             {/* 头部 */}
             <div className="flex items-center justify-between">
-              <h2 className="text-xl sm:text-2xl font-semibold">专注模式</h2>
+              <div className="flex-1" />
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
@@ -264,9 +259,6 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
             {/* 任务信息 */}
             <div className="text-center space-y-2">
               <h3 className="text-2xl sm:text-3xl font-bold">{task.title}</h3>
-              {task.timeSlot && (
-                <p className="text-gray-400 text-sm sm:text-base">时间段：{task.timeSlot}</p>
-              )}
             </div>
 
             {/* 进度环 */}
@@ -345,7 +337,7 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
                 <div className="text-center space-y-6">
                   <CheckCircle className="w-16 h-16 text-green-500 mx-auto animate-bounce" />
                   <h3 className="text-2xl font-bold">时间到！</h3>
-                  <p className="text-gray-400">您已完成 {formatTime(totalTime)} 的专注时间</p>
+                  <p className="text-gray-400">您已完成本次专注</p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <Button
                       onClick={handleAddFiveMinutes}
