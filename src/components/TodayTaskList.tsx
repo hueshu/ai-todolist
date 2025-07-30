@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { isToday } from 'date-fns'
-import { Calendar, Clock, CheckCircle, Circle, AlertTriangle, Plus, Target, Undo2 } from 'lucide-react'
+import { Calendar, Clock, CheckCircle, Circle, AlertTriangle, Plus, Target, Undo2, FolderOpen, Building2 } from 'lucide-react'
 import { cn, recalculateSubsequentTasks } from '@/lib/utils'
 import { Task } from '@/types'
 import { v4 as uuidv4 } from 'uuid'
@@ -288,8 +288,10 @@ export function TodayTaskList() {
 function TaskItem({ task, onFocusMode }: { task: Task; onFocusMode?: (task: Task) => void }) {
   const updateTask = useStore((state) => state.updateTask)
   const projects = useStore((state) => state.projects)
+  const industries = useStore((state) => state.industries)
   const tasks = useStore((state) => state.tasks)
   const project = projects.find(p => p.id === task.projectId)
+  const industry = project?.industryId ? industries.find(i => i.id === project.industryId) : null
   
   const priorityColors: Record<Task['priority'], string> = {
     urgent: 'border-red-300 bg-red-50',
@@ -382,7 +384,16 @@ function TaskItem({ task, onFocusMode }: { task: Task; onFocusMode?: (task: Task
                task.taskType === 'monthly' ? '🗓️' : '📅'}
             </span>
             {project && (
-              <span>{project.name}</span>
+              <span className="flex items-center gap-1 text-blue-600">
+                <FolderOpen className="w-3 h-3" />
+                {project.name}
+              </span>
+            )}
+            {industry && (
+              <span className="flex items-center gap-1 text-purple-600">
+                <Building2 className="w-3 h-3" />
+                {industry.name}
+              </span>
             )}
             {task.tags.length > 0 && (
               <span>{task.tags.join(', ')}</span>
