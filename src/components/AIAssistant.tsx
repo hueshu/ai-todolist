@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { useStore } from '@/lib/store'
-import { Sparkles, Calendar, Clock, Coffee, Target } from 'lucide-react'
+import { Sparkles, Calendar, Clock, Coffee, Target, Loader2 } from 'lucide-react'
 import { DailyPlanResponse } from '@/types'
 import { cn } from '@/lib/utils'
 import { getBeijingTime, getBeijingHourMinute } from '@/lib/timezone'
@@ -152,7 +153,24 @@ export function AIAssistant() {
   }
   
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <>
+      {/* 生成中的全屏遮罩 */}
+      {isGeneratingPlan && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white rounded-xl p-8 shadow-2xl max-w-sm mx-4">
+            <div className="flex flex-col items-center space-y-4">
+              <Loader2 className="w-12 h-12 text-purple-600 animate-spin" />
+              <div className="text-center space-y-2">
+                <h3 className="text-lg font-semibold text-gray-800">正在生成今日计划</h3>
+                <p className="text-sm text-gray-600">AI正在分析您的任务并制定最优方案...</p>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+      
+      <div className="space-y-4 sm:space-y-6">
       <div className="text-center sm:text-left">
         <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4 flex items-center justify-center sm:justify-start gap-2">
           <Sparkles className="w-5 h-5 text-purple-500" />
@@ -334,5 +352,6 @@ export function AIAssistant() {
         </Card>
       )}
     </div>
+    </>
   )
 }

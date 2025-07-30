@@ -24,6 +24,7 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
   const [showCompletion, setShowCompletion] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [originalStatus] = useState(task.status) // 保存原始状态
   const audioRef = useRef<HTMLAudioElement>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -253,7 +254,11 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={onClose}
+                  onClick={() => {
+                    // 恢复原始状态
+                    updateTask(task.id, { status: originalStatus })
+                    onClose()
+                  }}
                   className="text-gray-400 hover:text-white"
                   title="关闭"
                 >
@@ -300,7 +305,11 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
             {showControls && (
               <div className="flex justify-center gap-4">
                 <Button
-                  onClick={onClose}
+                  onClick={() => {
+                    // 恢复原始状态
+                    updateTask(task.id, { status: originalStatus })
+                    onClose()
+                  }}
                   size="lg"
                   variant="outline"
                   className="border-gray-600 text-gray-300 hover:bg-gray-800"

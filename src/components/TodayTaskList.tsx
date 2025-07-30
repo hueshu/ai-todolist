@@ -388,22 +388,27 @@ function TaskItem({ task, onFocusMode }: { task: Task; onFocusMode?: (task: Task
                task.taskType === 'weekly' ? '📆' :
                task.taskType === 'monthly' ? '🗓️' : '📅'}
             </span>
-            {project && (
-              <span className="flex items-center gap-1 text-blue-600">
-                <FolderOpen className="w-3 h-3" />
-                {project.name}
-              </span>
-            )}
-            {industry && (
-              <span className="flex items-center gap-1 text-purple-600">
-                <Building2 className="w-3 h-3" />
-                {industry.name}
-              </span>
-            )}
             {task.tags.length > 0 && (
               <span>{task.tags.join(', ')}</span>
             )}
           </div>
+          {/* 项目和行业信息单独一行 */}
+          {(project || industry) && (
+            <div className="flex items-center gap-3 text-xs mt-1">
+              {project && (
+                <span className="flex items-center gap-1 text-blue-600">
+                  <FolderOpen className="w-3 h-3" />
+                  {project.name}
+                </span>
+              )}
+              {industry && (
+                <span className="flex items-center gap-1 text-purple-600">
+                  <Building2 className="w-3 h-3" />
+                  {industry.name}
+                </span>
+              )}
+            </div>
+          )}
         </div>
         
         <div className="text-xs font-medium">
