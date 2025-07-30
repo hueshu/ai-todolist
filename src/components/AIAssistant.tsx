@@ -153,62 +153,81 @@ export function AIAssistant() {
   
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="hidden sm:block">
-        <h2 className="text-xl font-semibold mb-4">AI 智能助手</h2>
-        <p className="text-muted-foreground mb-6">
+      <div className="text-center sm:text-left">
+        <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4 flex items-center justify-center sm:justify-start gap-2">
+          <Sparkles className="w-5 h-5 text-purple-500" />
+          AI 智能助手
+        </h2>
+        <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
           让 AI 帮你分析任务、生成最优工作计划
         </p>
       </div>
       
-      <Card>
-        <CardHeader className="pb-3 sm:pb-6">
+      <Card className="border-purple-100 shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="pb-3 sm:pb-6 bg-gradient-to-r from-purple-50 to-blue-50">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-            智能日程规划
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+            <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent font-semibold">
+              智能日程规划
+            </span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent className="pt-3 sm:pt-4">
           <div className="space-y-3 sm:space-y-4">
-            <div className="grid grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm mb-3">
-              <div className="text-center">
-                <p className="text-muted-foreground mb-1">待安排任务</p>
-                <p className="text-lg sm:text-2xl font-bold">{tasks.filter(t => t.status === 'pool').length}</p>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm mb-4">
+              <div className="bg-purple-50 rounded-lg p-3 sm:p-4 text-center">
+                <p className="text-muted-foreground mb-1 flex items-center justify-center gap-1">
+                  <Target className="w-3 h-3" />
+                  待安排任务
+                </p>
+                <p className="text-xl sm:text-3xl font-bold text-purple-600">
+                  {tasks.filter(t => t.status === 'pool').length}
+                </p>
               </div>
-              <div className="text-center">
-                <p className="text-muted-foreground mb-1">停止工作时间</p>
+              <div className="bg-blue-50 rounded-lg p-3 sm:p-4">
+                <p className="text-muted-foreground mb-1 flex items-center justify-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  停止工作时间
+                </p>
                 <Input
                   type="time"
                   value={workEndTime}
                   onChange={(e) => setWorkEndTime(e.target.value)}
-                  className="w-full h-6 sm:h-8 text-xs sm:text-sm text-center"
+                  className="w-full h-8 sm:h-10 text-sm sm:text-base text-center font-medium border-blue-200 focus:border-blue-400"
                 />
               </div>
             </div>
             
-            <div className="text-center">
-              <p className="text-muted-foreground mb-1">番茄工作法</p>
-              <p className="text-xs text-gray-500">工作30分钟，休息5分钟</p>
-              <p className="text-xs text-gray-500">工作时间: 当前时间 - {workEndTime}</p>
+            <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-3 text-center mb-4">
+              <p className="text-sm font-medium text-gray-700 mb-1 flex items-center justify-center gap-1">
+                <Coffee className="w-4 h-4 text-orange-500" />
+                番茄工作法
+              </p>
+              <p className="text-xs text-gray-600">工作30分钟，休息5分钟</p>
+              <p className="text-xs text-gray-600">工作时间: 当前时间 - {workEndTime}</p>
             </div>
             
-            <div className="space-y-2">
-              <label className="text-xs sm:text-sm text-muted-foreground">今日偏好（可选）</label>
+            <div className="space-y-2 mb-4">
+              <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-purple-500" />
+                今日偏好（可选）
+              </label>
               <textarea
                 value={userPreferences}
                 onChange={(e) => setUserPreferences(e.target.value)}
                 placeholder="例如：今天想专注于某个项目、需要预留时间处理紧急事务、下午精力较好等..."
-                className="w-full h-16 sm:h-20 p-2 sm:p-3 text-xs sm:text-sm border rounded-md resize-none"
+                className="w-full h-16 sm:h-20 p-2 sm:p-3 text-xs sm:text-sm border-2 border-gray-200 rounded-lg resize-none focus:border-purple-400 focus:outline-none transition-colors"
               />
-              <p className="text-xs text-gray-500">AI会参考你的偏好来生成计划，但不会严格遵循</p>
+              <p className="text-xs text-gray-500 italic">💡 AI会参考你的偏好来生成计划，但不会严格遵循</p>
             </div>
             
             
             <Button 
               onClick={handleGeneratePlan}
               disabled={isGeneratingPlan || tasks.filter(t => t.status === 'pool').length === 0}
-              className="w-full h-10 sm:h-12 text-sm sm:text-base"
+              className="w-full h-10 sm:h-12 text-sm sm:text-base bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
+              <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
               {isGeneratingPlan ? '生成中...' : '生成今日计划'}
             </Button>
           </div>
@@ -216,16 +235,21 @@ export function AIAssistant() {
       </Card>
       
       {dailyPlan && (
-        <Card>
-          <CardHeader className="pb-3 sm:pb-6">
+        <Card className="border-green-100 shadow-md animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <CardHeader className="pb-3 sm:pb-6 bg-gradient-to-r from-green-50 to-blue-50">
             <CardTitle className="flex items-center justify-between text-base sm:text-lg">
-              <span>今日建议计划</span>
-              <Button variant="ghost" size="sm" onClick={() => setDailyPlan(null)} className="w-8 h-8">
+              <span className="flex items-center gap-2">
+                <Target className="w-5 h-5 text-green-600" />
+                <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent font-semibold">
+                  今日建议计划
+                </span>
+              </span>
+              <Button variant="ghost" size="sm" onClick={() => setDailyPlan(null)} className="w-8 h-8 hover:bg-red-50 hover:text-red-600 transition-colors">
                 ✕
               </Button>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="pt-3 sm:pt-4">
             <div className="space-y-2 sm:space-y-3">
               {dailyPlan.schedule.map((item, index) => {
                 const typeIcons = {

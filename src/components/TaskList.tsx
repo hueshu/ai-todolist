@@ -29,7 +29,7 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [completingTask, setCompletingTask] = useState<Task | null>(null)
   const [showBatchActions, setShowBatchActions] = useState(false)
-  const [sortBy, setSortBy] = useState<'priority' | 'deadline' | 'created'>('priority')
+  const [sortBy, setSortBy] = useState<'priority' | 'deadline' | 'created'>(filter === 'pool' ? 'created' : 'priority')
   const [filterPriority, setFilterPriority] = useState<string>('all')
   
   const tasks = useStore((state) => state.tasks)
