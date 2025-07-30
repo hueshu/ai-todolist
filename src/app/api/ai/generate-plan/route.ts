@@ -39,13 +39,26 @@ async function callAI(prompt: string, provider: 'openai' | 'claude' = 'openai') 
       max_tokens: 4096,
       messages: [{
         role: 'user',
-        content: prompt + '\n\n请返回纯JSON格式，不要包含任何其他文本。'
+        content: prompt + '\n\n重要：请直接返回JSON对象，不要使用markdown代码块（不要用```包裹），不要添加任何解释文字。'
       }],
     })
     
     // Claude 返回的是 content 数组，需要提取文本
-    const content = message.content[0].type === 'text' ? message.content[0].text : ''
-    return content
+    let content = message.content[0].type === 'text' ? message.content[0].text : ''
+    
+    // 清理 Claude 返回的内容，去除可能的 markdown 代码块标记
+    content = content.trim()
+    if (content.startsWith('```json')) {
+      content = content.slice(7) // 移除开头的 ```json
+    }
+    if (content.startsWith('```')) {
+      content = content.slice(3) // 移除开头的 ```
+    }
+    if (content.endsWith('```')) {
+      content = content.slice(0, -3) // 移除结尾的 ```
+    }
+    
+    return content.trim()
   } else {
     const openai = getOpenAI()
     const aiModel = process.env.OPENAI_MODEL || 'gpt-4o'
