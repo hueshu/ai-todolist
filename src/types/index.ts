@@ -93,6 +93,7 @@ export interface DailyPlanRequest {
     focusBlocks: number;
     breakFrequency: number;
   };
+  userPreferences?: string; // 用户自定义偏好描述
 }
 
 export interface DailyPlanResponse {

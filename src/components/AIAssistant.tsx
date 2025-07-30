@@ -14,6 +14,7 @@ export function AIAssistant() {
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false)
   const [dailyPlan, setDailyPlan] = useState<DailyPlanResponse | null>(null)
   const [workEndTime, setWorkEndTime] = useState('20:00')
+  const [userPreferences, setUserPreferences] = useState('') // 用户自定义偏好
   
   const tasks = useStore((state) => state.tasks)
   const projects = useStore((state) => state.projects)
@@ -91,7 +92,8 @@ export function AIAssistant() {
           projects: projects,
           fixedEvents: fixedEvents,
           preferences: preferences,
-          taskFrequencyStats: taskFrequencyStats
+          taskFrequencyStats: taskFrequencyStats,
+          userPreferences: userPreferences // 添加用户自定义偏好
         })
       })
       
@@ -187,6 +189,17 @@ export function AIAssistant() {
               <p className="text-muted-foreground mb-1">番茄工作法</p>
               <p className="text-xs text-gray-500">工作30分钟，休息5分钟</p>
               <p className="text-xs text-gray-500">工作时间: 当前时间 - {workEndTime}</p>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-xs sm:text-sm text-muted-foreground">今日偏好（可选）</label>
+              <textarea
+                value={userPreferences}
+                onChange={(e) => setUserPreferences(e.target.value)}
+                placeholder="例如：今天想专注于某个项目、需要预留时间处理紧急事务、下午精力较好等..."
+                className="w-full h-16 sm:h-20 p-2 sm:p-3 text-xs sm:text-sm border rounded-md resize-none"
+              />
+              <p className="text-xs text-gray-500">AI会参考你的偏好来生成计划，但不会严格遵循</p>
             </div>
             
             

@@ -131,6 +131,9 @@ ${JSON.stringify(todayFixedEvents, null, 2)}
 - 用户自定义项目优先级（displayOrder）：${body.projects.filter(p => p.displayOrder !== undefined).sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999)).slice(0, 5).map(p => `${p.name}(顺序:${p.displayOrder || '未设置'})`).join('、')}${body.projects.filter(p => p.displayOrder !== undefined).length > 5 ? '等' : ''}
 任务频次：每日${body.taskFrequencyStats.daily}个，每周${body.taskFrequencyStats.weekly}个，每月${body.taskFrequencyStats.monthly}个，单次${body.taskFrequencyStats.single}个
 
+${body.userPreferences ? `用户今日偏好（仅供参考，灵活处理）：
+${body.userPreferences}
+` : ''}
 待安排任务（限制前15个以避免过长）：
 ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.length > 15 ? `\n...等共${tasksWithFullInfo.length}个任务` : ''}
 
@@ -143,7 +146,8 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
    - daily/weekly等重复任务应优先安排
    - 考虑用户自定义的项目优先级（displayOrder），但这只是参考，你可以根据任务紧急度、截止日期、依赖关系等因素灵活调整
    - 如果用户给某个项目设置了较高的displayOrder（数字越小优先级越高），可以适当倾斜时间分配，但不必严格遵守
-   - 最终目标是制定一个合理高效的计划，而不是机械地按照排序来安排
+   - 用户今日偏好（userPreferences）也是参考因素，理解用户意图但要保持计划的合理性
+   - 最终目标是制定一个合理高效的计划，综合考虑各种因素，而不是机械地执行某一条规则
 6. 高优先级任务在精力充沛时段
 7. **番茄工作法**：尽量将任务安排为30分钟的工作块，每个工作块后安排5分钟休息
    - 如果任务需要1小时，可以拆分为2个30分钟的番茄钟
