@@ -152,6 +152,9 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
 7. **番茄工作法**：尽量将任务安排为30分钟的工作块，每个工作块后安排5分钟休息
    - 如果任务需要1小时，可以拆分为2个30分钟的番茄钟
    - 休息时间请明确标注为"break"类型
+   - **重要**：长时间任务（如需要2-3小时的任务）可以分段执行，中间穿插其他短任务或休息，但必须保证该任务的总时长不变
+   - 例如：3小时的任务可以安排为：第一段1小时 → 休息 → 其他短任务30分钟 → 第二段1小时 → 休息 → 第三段1小时
+   - 分段时请在同一天内使用相同的taskId，不要创建新任务
 8. **任务依赖**：注意任务的dependencies字段，被依赖的任务必须先完成
    - 如果任务A依赖任务B（A.dependencies包含B的ID），则B必须在A之前安排
    - 确保依赖链的正确顺序
@@ -160,12 +163,14 @@ ${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.le
 {
   "schedule": [
     {"timeSlot": "${actualStartTime}-HH:mm", "taskId": "实际ID", "type": "focus|regular|break", "reason": "原因"},
-    {"timeSlot": "HH:mm-HH:mm", "taskId": "实际ID", "type": "focus|regular|break", "reason": "原因"}
+    {"timeSlot": "HH:mm-HH:mm", "taskId": "break", "type": "break", "reason": "休息时间"},
+    {"timeSlot": "HH:mm-HH:mm", "taskId": "同一个长任务ID", "type": "focus", "reason": "继续执行长时间任务的第二段"}
   ],
   "suggestions": ["建议1", "建议2"],
   "estimatedProductivity": 85,
   "projectAnalysis": {"highValueProjects": "重点项目", "timeAllocation": "时间策略", "riskWarning": "风险提醒"}
-}`
+}
+注意：同一个任务可以出现多次，表示分段执行`
 
     console.log('Sending to OpenAI with prompt length:', prompt.length)
     
