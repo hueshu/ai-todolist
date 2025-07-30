@@ -171,12 +171,8 @@ export function AIAssistant() {
           taskSegmentIndex[taskId] = (taskSegmentIndex[taskId] || 0) + 1
           const segmentIndex = taskSegmentIndex[taskId]
           
-          // 为分段任务创建新的任务ID
-          const segmentTaskId = `${taskId}_segment_${segmentIndex}`
-          
           // 使用addTask创建新的分段任务，而不是更新原始任务
           addTask({
-            id: segmentTaskId,
             title: `${item.task.title} (${segmentIndex}/${totalSegments})`,
             description: item.task.description,
             projectId: item.task.projectId,
@@ -186,7 +182,6 @@ export function AIAssistant() {
             tags: item.task.tags,
             dependencies: item.task.dependencies,
             taskType: item.task.taskType,
-            createdAt: getBeijingTime(),
             deadline: endDate,
             scheduledStartTime: startDate,
             timeSlot: item.timeSlot,
