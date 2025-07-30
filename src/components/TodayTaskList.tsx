@@ -394,15 +394,15 @@ function TaskItem({ task, onFocusMode }: { task: Task; onFocusMode?: (task: Task
           </div>
           {/* 项目和行业信息单独一行 */}
           {(project || industry) && (
-            <div className="flex items-center gap-3 text-xs mt-1">
+            <div className="flex items-center gap-2 text-xs mt-2">
               {project && (
-                <span className="flex items-center gap-1 text-blue-600">
+                <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
                   <FolderOpen className="w-3 h-3" />
                   {project.name}
                 </span>
               )}
               {industry && (
-                <span className="flex items-center gap-1 text-purple-600">
+                <span className="flex items-center gap-1 px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
                   <Building2 className="w-3 h-3" />
                   {industry.name}
                 </span>
