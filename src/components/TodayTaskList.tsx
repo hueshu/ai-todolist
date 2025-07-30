@@ -24,6 +24,9 @@ export function TodayTaskList() {
   
   // 获取今日任务：包括今天安排的、今天完成的，或截止日期是今天的
   const todayTasks = tasks.filter(task => {
+    // 首先排除任务池中的任务
+    if (task.status === 'pool') return false
+    
     // 1. 有时间安排的任务（timeSlot 表示今天要做）
     if (task.timeSlot) return true
     
