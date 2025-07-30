@@ -133,13 +133,15 @@ ${tasksWithFullInfo.slice(0, 20).map(t =>
 ).join('\n')}${tasksWithFullInfo.length > 20 ? `\n...还有${tasksWithFullInfo.length - 20}个任务` : ''}
 
 ${body.userPreferences ? `用户偏好：${body.userPreferences}\n` : ''}
+${body.strictRequirements ? `⚠️ 严格执行要求（必须遵守）：${body.strictRequirements}\n` : ''}
 
 安排原则：
-1. 优先安排：紧急任务、每日/每周重复任务、有截止日期的任务
-2. 考虑项目优先级和用户偏好，但保持灵活性
-3. 长任务可分段，使用相同taskId
-4. 遵守任务依赖关系
-5. 在精力好的时段安排重要任务
+1. 最高优先级：严格执行要求中的内容必须完全遵守
+2. 优先安排：紧急任务、每日/每周重复任务、有截止日期的任务
+3. 考虑项目优先级和用户偏好，但保持灵活性
+4. 长任务可分段，使用相同taskId
+5. 遵守任务依赖关系
+6. 在精力好的时段安排重要任务
 
 返回JSON（只包含能在今天完成的任务）：
 {

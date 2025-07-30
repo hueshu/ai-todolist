@@ -94,6 +94,7 @@ export interface DailyPlanRequest {
     breakFrequency: number;
   };
   userPreferences?: string; // 用户自定义偏好描述
+  strictRequirements?: string; // 严格执行要求
 }
 
 export interface DailyPlanResponse {

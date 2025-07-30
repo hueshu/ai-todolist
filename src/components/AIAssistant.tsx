@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { useStore } from '@/lib/store'
-import { Sparkles, Calendar, Clock, Coffee, Target, Loader2 } from 'lucide-react'
+import { Sparkles, Calendar, Clock, Coffee, Target, Loader2, AlertCircle } from 'lucide-react'
 import { DailyPlanResponse } from '@/types'
 import { cn } from '@/lib/utils'
 import { getBeijingTime, getBeijingHourMinute } from '@/lib/timezone'
@@ -16,6 +16,7 @@ export function AIAssistant() {
   const [dailyPlan, setDailyPlan] = useState<DailyPlanResponse | null>(null)
   const [workEndTime, setWorkEndTime] = useState('20:00')
   const [userPreferences, setUserPreferences] = useState('') // 用户自定义偏好
+  const [strictRequirements, setStrictRequirements] = useState('') // 严格执行要求
   
   const tasks = useStore((state) => state.tasks)
   const projects = useStore((state) => state.projects)
@@ -94,7 +95,8 @@ export function AIAssistant() {
           fixedEvents: fixedEvents,
           preferences: preferences,
           taskFrequencyStats: taskFrequencyStats,
-          userPreferences: userPreferences // 添加用户自定义偏好
+          userPreferences: userPreferences, // 添加用户自定义偏好
+          strictRequirements: strictRequirements // 添加严格执行要求
         })
       })
       
@@ -237,6 +239,20 @@ export function AIAssistant() {
                 className="w-full h-16 sm:h-20 p-2 sm:p-3 text-xs sm:text-sm border-2 border-gray-200 rounded-lg resize-none focus:border-purple-400 focus:outline-none transition-colors"
               />
               <p className="text-xs text-gray-500 italic">💡 AI会参考你的偏好来生成计划，但不会严格遵循</p>
+            </div>
+            
+            <div className="space-y-2 mb-4">
+              <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3 text-red-500" />
+                严格执行要求（可选）
+              </label>
+              <textarea
+                value={strictRequirements}
+                onChange={(e) => setStrictRequirements(e.target.value)}
+                placeholder="例如：必须在上午完成某个任务、下午2-4点必须处理客户事务、某些任务必须连续执行等..."
+                className="w-full h-16 sm:h-20 p-2 sm:p-3 text-xs sm:text-sm border-2 border-red-200 rounded-lg resize-none focus:border-red-400 focus:outline-none transition-colors"
+              />
+              <p className="text-xs text-red-500 font-medium">⚠️ AI将严格遵循这些要求来生成计划</p>
             </div>
             
             
