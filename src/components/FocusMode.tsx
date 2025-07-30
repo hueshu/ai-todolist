@@ -150,18 +150,18 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
   const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-gray-900 flex items-center justify-center p-4 sm:p-6">
       {/* 隐藏的音频元素 */}
       <audio ref={audioRef} preload="auto">
         <source src="/notification.mp3" type="audio/mpeg" />
         <source src="/notification.ogg" type="audio/ogg" />
       </audio>
 
-      <Card className="w-full max-w-md bg-gray-900 text-white border-gray-800">
-        <div className="p-6 space-y-6">
+      <div className="w-full max-w-md mx-auto text-white">
+        <div className="space-y-6">
           {/* 头部 */}
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">专注模式</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold">专注模式</h2>
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
@@ -184,38 +184,38 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
 
           {/* 任务信息 */}
           <div className="text-center space-y-2">
-            <h3 className="text-2xl font-bold">{task.title}</h3>
+            <h3 className="text-2xl sm:text-3xl font-bold">{task.title}</h3>
             {task.timeSlot && (
-              <p className="text-gray-400">时间段：{task.timeSlot}</p>
+              <p className="text-gray-400 text-sm sm:text-base">时间段：{task.timeSlot}</p>
             )}
           </div>
 
           {/* 进度环 */}
-          <div className="relative w-48 h-48 mx-auto">
-            <svg className="w-full h-full transform -rotate-90">
+          <div className="relative w-48 h-48 sm:w-64 sm:h-64 mx-auto">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
               <circle
-                cx="96"
-                cy="96"
-                r="88"
+                cx="100"
+                cy="100"
+                r="90"
                 stroke="currentColor"
                 strokeWidth="8"
                 fill="none"
                 className="text-gray-700"
               />
               <circle
-                cx="96"
-                cy="96"
-                r="88"
+                cx="100"
+                cy="100"
+                r="90"
                 stroke="currentColor"
                 strokeWidth="8"
                 fill="none"
-                strokeDasharray={`${2 * Math.PI * 88}`}
-                strokeDashoffset={`${2 * Math.PI * 88 * (1 - progress / 100)}`}
+                strokeDasharray={`${2 * Math.PI * 90}`}
+                strokeDashoffset={`${2 * Math.PI * 90 * (1 - progress / 100)}`}
                 className="text-blue-500 transition-all duration-1000"
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-4xl font-bold">{formatTime(timeLeft)}</span>
+              <span className="text-4xl sm:text-5xl font-bold">{formatTime(timeLeft)}</span>
             </div>
           </div>
 
@@ -298,7 +298,7 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
             </p>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }
