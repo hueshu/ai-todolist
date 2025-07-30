@@ -91,7 +91,10 @@ export function TodayTaskList() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setShowCompleted(!showCompleted)}
+          onClick={() => {
+            console.log('Button clicked, current showCompleted:', showCompleted)
+            setShowCompleted(!showCompleted)
+          }}
         >
           {showCompleted ? '隐藏已完成' : '显示已完成'}
         </Button>
@@ -130,43 +133,41 @@ export function TodayTaskList() {
           </p>
         </div>
         
-        {(showCompleted ? todayTasks : pendingTasks).length > 0 && (
-          <div className="space-y-3">
-            {/* 待完成任务 */}
-            {pendingTasks.length > 0 && (
-              <div>
-                <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                  <Circle className="w-4 h-4" />
-                  待完成 ({pendingTasks.length})
-                </p>
-                <div className="space-y-2">
-                  {pendingTasks.map(task => (
-                    <TaskItem 
-                      key={task.id} 
-                      task={task} 
-                      onFocusMode={setFocusTask}
-                    />
-                  ))}
-                </div>
+        <div className="space-y-3">
+          {/* 待完成任务 - 总是显示 */}
+          {pendingTasks.length > 0 && (
+            <div>
+              <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                <Circle className="w-4 h-4" />
+                待完成 ({pendingTasks.length})
+              </p>
+              <div className="space-y-2">
+                {pendingTasks.map(task => (
+                  <TaskItem 
+                    key={task.id} 
+                    task={task} 
+                    onFocusMode={setFocusTask}
+                  />
+                ))}
               </div>
-            )}
-            
-            {/* 已完成任务 - 只在 showCompleted 为 true 时显示 */}
-            {showCompleted && completedTasks.length > 0 && (
-              <div>
-                <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  已完成 ({completedTasks.length})
-                </p>
-                <div className="space-y-2 opacity-60">
-                  {completedTasks.map(task => (
-                    <TaskItem key={task.id} task={task} />
-                  ))}
-                </div>
+            </div>
+          )}
+          
+          {/* 已完成任务 - 只在 showCompleted 为 true 时显示 */}
+          {showCompleted && completedTasks.length > 0 && (
+            <div>
+              <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                已完成 ({completedTasks.length})
+              </p>
+              <div className="space-y-2 opacity-60">
+                {completedTasks.map(task => (
+                  <TaskItem key={task.id} task={task} />
+                ))}
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
         
         {/* 添加任务功能 - 只有在所有任务完成时才显示 */}
         {allTasksCompleted && (
