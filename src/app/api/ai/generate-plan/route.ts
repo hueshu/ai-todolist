@@ -135,6 +135,12 @@ export async function POST(request: NextRequest) {
       } : null
     }))
     
+    // 调试：打印任务的预估时间
+    console.log('[调试] 任务预估时间:', tasksWithFullInfo.map(t => ({
+      title: t.title,
+      estimatedHours: t.estimatedHours
+    })))
+    
     // 将字符串日期转换为 Date 对象
     const requestDate = new Date(body.date)
     console.log('Converted date:', requestDate)
@@ -202,13 +208,16 @@ ${body.strictRequirements ? `⚠️ 严格执行要求（必须遵守）：${bod
 安排原则（按优先级排序）：
 1. 必须遵守：固定事件时间（如吃饭、会议等）不能被任何任务占用
 2. 必须遵守：严格执行要求中的内容必须完全满足
-3. 优先安排：紧急任务、每日/每周重复任务、有截止日期的任务
-4. 考虑项目优先级和用户偏好，但保持灵活性
-5. 长任务可分段，使用相同taskId
-6. 遵守任务依赖关系
-7. 在精力好的时段安排重要任务
+3. 必须遵守：每个任务的时长必须根据其estimatedHours来安排（如3h的任务需要3小时时间段）
+4. 优先安排：紧急任务、每日/每周重复任务、有截止日期的任务
+5. 考虑项目优先级和用户偏好，但保持灵活性
+6. 长任务可分段执行（如3小时任务可分为1.5h+1.5h），但总时长必须等于estimatedHours
+7. 遵守任务依赖关系
+8. 在精力好的时段安排重要任务
 
-重要提醒：固定事件（如午餐、晚餐）是不可协商的，必须保留这些时间段
+重要提醒：
+- 固定事件（如午餐、晚餐）是不可协商的，必须保留这些时间段
+- 任务的estimatedHours必须被尊重，不能随意缩短或延长
 
 返回JSON格式要求：
 1. taskId必须使用上面任务列表中的实际ID（方括号内的ID值）
