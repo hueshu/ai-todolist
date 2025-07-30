@@ -58,10 +58,14 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
 
   const filteredTasks = tasks
     .filter(task => {
-      if (filter !== 'all' && task.status !== filter) return false
+      // 任务池视图显示所有任务，但可以通过 showCompleted 控制是否显示已完成的
+      if (filter === 'pool') {
+        if (!showCompleted && task.status === 'completed') return false
+      } else if (filter !== 'all' && task.status !== filter) {
+        return false
+      }
+      
       if (filterPriority !== 'all' && task.priority !== filterPriority) return false
-      // 如果是任务池且不显示已完成，则过滤掉已完成的任务
-      if (filter === 'pool' && !showCompleted && task.status === 'completed') return false
       return true
     })
     .sort((a, b) => {
