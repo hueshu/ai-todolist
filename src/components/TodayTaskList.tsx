@@ -7,16 +7,18 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { isToday } from 'date-fns'
-import { Calendar, Clock, CheckCircle, Circle, AlertTriangle, Plus } from 'lucide-react'
+import { Calendar, Clock, CheckCircle, Circle, AlertTriangle, Plus, Target } from 'lucide-react'
 import { cn, recalculateSubsequentTasks } from '@/lib/utils'
 import { Task } from '@/types'
 import { v4 as uuidv4 } from 'uuid'
 import { getBeijingTime, isBeijingToday } from '@/lib/timezone'
+import { FocusMode } from './FocusMode'
 
 export function TodayTaskList() {
   const [showCompleted, setShowCompleted] = useState(true)
   const [isAddingTask, setIsAddingTask] = useState(false)
   const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [focusTask, setFocusTask] = useState<Task | null>(null)
   const tasks = useStore((state) => state.tasks)
   const addTask = useStore((state) => state.addTask)
   
@@ -136,7 +138,11 @@ export function TodayTaskList() {
             </p>
             <div className="space-y-2">
               {pendingTasks.map(task => (
-                <TaskItem key={task.id} task={task} />
+                <TaskItem 
+                  key={task.id} 
+                  task={task} 
+                  onFocusMode={setFocusTask}
+                />
               ))}
             </div>
           </div>
@@ -216,12 +222,40 @@ export function TodayTaskList() {
           </Card>
         )}
       </div>
+      
+      {/* 专注模式 */}
+      {focusTask && (
+        <FocusMode
+          task={focusTask}
+          onClose={() => setFocusTask(null)}
+          onComplete={() => {
+            const updateTask = useStore.getState().updateTask
+            const tasks = useStore.getState().tasks
+            const completionTime = getBeijingTime()
+            updateTask(focusTask.id, { status: 'completed', completedAt: completionTime })
+            
+            // 如果任务有时间安排，重新计算后续任务时间
+            if (focusTask.timeSlot) {
+              const subsequentUpdates = recalculateSubsequentTasks(focusTask, tasks, completionTime)
+              
+              // 应用后续任务的时间调整
+              subsequentUpdates.forEach(update => {
+                if (update.id) {
+                  updateTask(update.id, update)
+                }
+              })
+            }
+            
+            setFocusTask(null)
+          }}
+        />
+      )}
     </div>
   )
 }
 
 // 简化的任务项组件
-function TaskItem({ task }: { task: Task }) {
+function TaskItem({ task, onFocusMode }: { task: Task; onFocusMode?: (task: Task) => void }) {
   const updateTask = useStore((state) => state.updateTask)
   const projects = useStore((state) => state.projects)
   const tasks = useStore((state) => state.tasks)
@@ -234,16 +268,20 @@ function TaskItem({ task }: { task: Task }) {
     low: 'border-green-300 bg-green-50',
   }
   
-  const handleToggleStatus = () => {
-    if (task.status === 'completed') {
-      updateTask(task.id, { status: 'scheduled', completedAt: undefined })
+  const handleToggleStatus = (taskId?: string) => {
+    const targetTaskId = taskId || task.id
+    const targetTask = taskId ? tasks.find(t => t.id === taskId) : task
+    if (!targetTask) return
+    
+    if (targetTask.status === 'completed') {
+      updateTask(targetTaskId, { status: 'scheduled', completedAt: undefined })
     } else {
       const completionTime = getBeijingTime()
-      updateTask(task.id, { status: 'completed', completedAt: completionTime })
+      updateTask(targetTaskId, { status: 'completed', completedAt: completionTime })
       
       // 如果任务有时间安排，重新计算后续任务时间
-      if (task.timeSlot) {
-        const subsequentUpdates = recalculateSubsequentTasks(task, tasks, completionTime)
+      if (targetTask.timeSlot) {
+        const subsequentUpdates = recalculateSubsequentTasks(targetTask, tasks, completionTime)
         
         // 应用后续任务的时间调整
         subsequentUpdates.forEach(update => {
@@ -263,10 +301,20 @@ function TaskItem({ task }: { task: Task }) {
   }
   
   return (
-    <Card className={cn(
-      "transition-all",
-      task.status === 'completed' ? 'opacity-60' : priorityColors[task.priority]
-    )}>
+    <Card 
+      className={cn(
+        "transition-all cursor-pointer hover:shadow-md",
+        task.status === 'completed' ? 'opacity-60' : priorityColors[task.priority]
+      )}
+      onClick={(e) => {
+        // 如果点击的是完成按钮，不触发专注模式
+        if ((e.target as HTMLElement).closest('button')) return
+        // 只有未完成的任务才能进入专注模式
+        if (task.status !== 'completed' && onFocusMode) {
+          onFocusMode(task)
+        }
+      }}
+    >
       <CardContent className="p-3 flex items-center gap-3">
         <Button
           variant="ghost"
