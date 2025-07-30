@@ -115,62 +115,45 @@ export async function POST(request: NextRequest) {
     console.log('[时区信息] 最终使用的开始时间:', actualStartTime)
     console.log('[时区信息] 停止工作时间:', workEndTime)
     
-    // 简化版提示词，避免长度过长导致API失败
-    const prompt = `作为时间管理专家，生成今日工作计划。注意：所有时间都是北京时间（UTC+8）。
+    // 优化后的提示词，更简洁清晰
+    const prompt = `作为时间管理专家，为用户生成今日工作计划。
 
-基本信息：
-- 当前北京时间：${actualStartTime}
-- 停止工作时间：${workEndTime}（北京时间，请确保所有任务在此时间前完成）
-- 使用番茄工作法：每工作30分钟，休息5分钟
+时间安排：
+- 开始时间：${actualStartTime}
+- 结束时间：${workEndTime}
+- 番茄工作法：25-30分钟工作 + 5分钟休息
 
-固定事件（必须避开）：
-${JSON.stringify(todayFixedEvents, null, 2)}
-
-项目概况：
-- 总项目数：${body.projects.length}个，活跃${body.projects.filter(p => p.status === 'active').length}个
-- 用户自定义项目优先级（displayOrder）：${body.projects.filter(p => p.displayOrder !== undefined).sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999)).slice(0, 5).map(p => `${p.name}(顺序:${p.displayOrder || '未设置'})`).join('、')}${body.projects.filter(p => p.displayOrder !== undefined).length > 5 ? '等' : ''}
-任务频次：每日${body.taskFrequencyStats.daily}个，每周${body.taskFrequencyStats.weekly}个，每月${body.taskFrequencyStats.monthly}个，单次${body.taskFrequencyStats.single}个
-
-${body.userPreferences ? `用户今日偏好（仅供参考，灵活处理）：
-${body.userPreferences}
+${todayFixedEvents.length > 0 ? `固定事件（避开这些时间）：
+${todayFixedEvents.map(e => `${e.startTime}-${e.endTime}: ${e.title}`).join('\n')}
 ` : ''}
-待安排任务（限制前15个以避免过长）：
-${JSON.stringify(tasksWithFullInfo.slice(0, 15), null, 2)}${tasksWithFullInfo.length > 15 ? `\n...等共${tasksWithFullInfo.length}个任务` : ''}
 
-要求：
-1. 使用实际taskId，不要创造新ID
-2. **重要**：第一个时间段必须从${actualStartTime}开始，后续时间段连续安排
-3. **重要**：所有任务必须在${workEndTime}前结束，不要安排超过此时间的任务
-4. 避开固定事件时间
-5. **优先级参考（非强制）**：
-   - daily/weekly等重复任务应优先安排
-   - 考虑用户自定义的项目优先级（displayOrder），但这只是参考，你可以根据任务紧急度、截止日期、依赖关系等因素灵活调整
-   - 如果用户给某个项目设置了较高的displayOrder（数字越小优先级越高），可以适当倾斜时间分配，但不必严格遵守
-   - 用户今日偏好（userPreferences）也是参考因素，理解用户意图但要保持计划的合理性
-   - 最终目标是制定一个合理高效的计划，综合考虑各种因素，而不是机械地执行某一条规则
-6. 高优先级任务在精力充沛时段
-7. **番茄工作法**：尽量将任务安排为30分钟的工作块，每个工作块后安排5分钟休息
-   - 如果任务需要1小时，可以拆分为2个30分钟的番茄钟
-   - 休息时间请明确标注为"break"类型
-   - **重要**：长时间任务（如需要2-3小时的任务）可以分段执行，中间穿插其他短任务或休息，但必须保证该任务的总时长不变
-   - 例如：3小时的任务可以安排为：第一段1小时 → 休息 → 其他短任务30分钟 → 第二段1小时 → 休息 → 第三段1小时
-   - 分段时请在同一天内使用相同的taskId，不要创建新任务
-8. **任务依赖**：注意任务的dependencies字段，被依赖的任务必须先完成
-   - 如果任务A依赖任务B（A.dependencies包含B的ID），则B必须在A之前安排
-   - 确保依赖链的正确顺序
+待安排任务（共${body.existingTasks.length}个）：
+${tasksWithFullInfo.slice(0, 20).map(t => 
+  `- ${t.title} (${t.estimatedHours}h, ${t.priority}优先级${t.project ? `, 项目:${t.project.name}` : ''}${t.dependencies.length > 0 ? `, 依赖其他任务` : ''})`
+).join('\n')}${tasksWithFullInfo.length > 20 ? `\n...还有${tasksWithFullInfo.length - 20}个任务` : ''}
 
-返回JSON格式（timeSlot格式必须是HH:mm-HH:mm）：
+${body.userPreferences ? `用户偏好：${body.userPreferences}\n` : ''}
+
+安排原则：
+1. 优先安排：紧急任务、每日/每周重复任务、有截止日期的任务
+2. 考虑项目优先级和用户偏好，但保持灵活性
+3. 长任务可分段，使用相同taskId
+4. 遵守任务依赖关系
+5. 在精力好的时段安排重要任务
+
+返回JSON（只包含能在今天完成的任务）：
 {
   "schedule": [
-    {"timeSlot": "${actualStartTime}-HH:mm", "taskId": "实际ID", "type": "focus|regular|break", "reason": "原因"},
-    {"timeSlot": "HH:mm-HH:mm", "taskId": "break", "type": "break", "reason": "休息时间"},
-    {"timeSlot": "HH:mm-HH:mm", "taskId": "同一个长任务ID", "type": "focus", "reason": "继续执行长时间任务的第二段"}
+    {"timeSlot": "HH:mm-HH:mm", "taskId": "实际任务ID", "type": "focus/regular/break", "reason": "简短原因"}
   ],
-  "suggestions": ["建议1", "建议2"],
-  "estimatedProductivity": 85,
-  "projectAnalysis": {"highValueProjects": "重点项目", "timeAllocation": "时间策略", "riskWarning": "风险提醒"}
-}
-注意：同一个任务可以出现多次，表示分段执行`
+  "suggestions": ["最多3条建议"],
+  "estimatedProductivity": 75,
+  "projectAnalysis": {
+    "highValueProjects": "今日重点项目",
+    "timeAllocation": "时间分配策略",
+    "riskWarning": "潜在风险"
+  }
+}`
 
     console.log('Sending to OpenAI with prompt length:', prompt.length)
     
