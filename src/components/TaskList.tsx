@@ -393,7 +393,9 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
           task={editingTask}
           onClose={() => setEditingTask(null)}
           onSave={(updatedTask) => {
-            handleUpdateTask(updatedTask.id, updatedTask)
+            // 提取变更的字段，排除 id
+            const { id, ...updates } = updatedTask
+            handleUpdateTask(id, updates)
             setEditingTask(null)
           }}
         />
