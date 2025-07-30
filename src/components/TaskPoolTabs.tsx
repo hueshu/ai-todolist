@@ -9,6 +9,7 @@ import { CheckCircle2, Circle, RefreshCw } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { resetDailyTasks } from '@/lib/database'
 import { Button } from '@/components/ui/button'
+import { TestResetButton } from './TestResetButton'
 
 export function TaskPoolTabs() {
   const [isResetting, setIsResetting] = useState(false)
@@ -101,6 +102,8 @@ export function TaskPoolTabs() {
       </TabsContent>
       
       <TabsContent value="completed" className="space-y-4">
+        {/* 测试工具 */}
+        <TestResetButton />
         <TaskList filter="completed" />
       </TabsContent>
     </Tabs>
