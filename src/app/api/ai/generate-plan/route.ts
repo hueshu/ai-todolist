@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
+import Anthropic from '@anthropic-ai/sdk'
 import { DailyPlanRequest, DailyPlanResponse, Task } from '@/types'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
@@ -13,6 +14,55 @@ function getOpenAI() {
   return new OpenAI({
     apiKey: apiKey,
   })
+}
+
+function getClaude() {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    throw new Error('ANTHROPIC_API_KEY environment variable is missing or empty')
+  }
+  return new Anthropic({
+    apiKey: apiKey,
+  })
+}
+
+async function callAI(prompt: string, provider: 'openai' | 'claude' = 'openai') {
+  console.log(`Using AI provider: ${provider}`)
+  
+  if (provider === 'claude') {
+    const claude = getClaude()
+    const modelName = process.env.ANTHROPIC_MODEL || 'claude-3-opus-20240229'
+    console.log('Using Claude model:', modelName)
+    
+    const message = await claude.messages.create({
+      model: modelName,
+      max_tokens: 4096,
+      messages: [{
+        role: 'user',
+        content: prompt + '\n\n请返回纯JSON格式，不要包含任何其他文本。'
+      }],
+    })
+    
+    // Claude 返回的是 content 数组，需要提取文本
+    const content = message.content[0].type === 'text' ? message.content[0].text : ''
+    return content
+  } else {
+    const openai = getOpenAI()
+    const aiModel = process.env.OPENAI_MODEL || 'gpt-4o'
+    console.log('Using OpenAI model:', aiModel)
+    
+    const completion = await openai.chat.completions.create({
+      messages: [{ role: "system", content: prompt }],
+      model: aiModel,
+      response_format: { type: "json_object" },
+    })
+    
+    if (!completion.choices || completion.choices.length === 0) {
+      throw new Error('No response from OpenAI')
+    }
+    
+    return completion.choices[0].message.content || ''
+  }
 }
 
 
@@ -168,28 +218,17 @@ ${body.strictRequirements ? `⚠️ 严格执行要求（必须遵守）：${bod
   }
 }`
 
-    console.log('Sending to OpenAI with prompt length:', prompt.length)
+    console.log('Sending to AI with prompt length:', prompt.length)
     
-    const openai = getOpenAI()
-    // 支持通过环境变量配置模型，默认使用gpt-4o
-    const aiModel = process.env.OPENAI_MODEL || 'gpt-4o'
-    console.log('Using AI model:', aiModel)
+    // 获取 AI 提供商选择，默认使用 OpenAI
+    const aiProvider = body.aiProvider || 'openai'
     
-    const completion = await openai.chat.completions.create({
-      messages: [{ role: "system", content: prompt }],
-      model: aiModel,
-      response_format: { type: "json_object" },
-    })
-
-    console.log('OpenAI response received')
+    const messageContent = await callAI(prompt, aiProvider)
     
-    if (!completion.choices || completion.choices.length === 0) {
-      throw new Error('No response from OpenAI')
-    }
+    console.log('AI response received')
     
-    const messageContent = completion.choices[0].message.content
     if (!messageContent) {
-      throw new Error('Empty response from OpenAI')
+      throw new Error('Empty response from AI')
     }
     
     const result = JSON.parse(messageContent)

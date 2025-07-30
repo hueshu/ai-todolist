@@ -17,6 +17,7 @@ export function AIAssistant() {
   const [workEndTime, setWorkEndTime] = useState('20:00')
   const [userPreferences, setUserPreferences] = useState('') // 用户自定义偏好
   const [strictRequirements, setStrictRequirements] = useState('') // 严格执行要求
+  const [aiProvider, setAiProvider] = useState<'openai' | 'claude'>('openai') // AI 提供商选择
   
   const tasks = useStore((state) => state.tasks)
   const projects = useStore((state) => state.projects)
@@ -96,7 +97,8 @@ export function AIAssistant() {
           preferences: preferences,
           taskFrequencyStats: taskFrequencyStats,
           userPreferences: userPreferences, // 添加用户自定义偏好
-          strictRequirements: strictRequirements // 添加严格执行要求
+          strictRequirements: strictRequirements, // 添加严格执行要求
+          aiProvider: aiProvider // 添加 AI 提供商选择
         })
       })
       
@@ -216,6 +218,46 @@ export function AIAssistant() {
                   className="w-full h-8 sm:h-10 text-sm sm:text-base text-center font-medium border-blue-200 focus:border-blue-400"
                 />
               </div>
+            </div>
+            
+            <div className="mb-4">
+              <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-1 mb-2">
+                <Brain className="w-3 h-3 text-indigo-500" />
+                选择 AI 模型
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAiProvider('openai')}
+                  className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                    aiProvider === 'openai' 
+                      ? 'border-green-500 bg-green-50 text-green-700 font-medium' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <span>🤖</span>
+                    <span>OpenAI GPT</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAiProvider('claude')}
+                  className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                    aiProvider === 'claude' 
+                      ? 'border-purple-500 bg-purple-50 text-purple-700 font-medium' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <span>🎭</span>
+                    <span>Claude</span>
+                  </div>
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1 text-center">
+                {aiProvider === 'openai' ? '使用 OpenAI 的 GPT 模型' : '使用 Anthropic 的 Claude 模型'}
+              </p>
             </div>
             
             <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-3 text-center mb-4">

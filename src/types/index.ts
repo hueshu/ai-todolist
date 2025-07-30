@@ -95,6 +95,7 @@ export interface DailyPlanRequest {
   };
   userPreferences?: string; // 用户自定义偏好描述
   strictRequirements?: string; // 严格执行要求
+  aiProvider?: 'openai' | 'claude'; // AI 提供商选择
 }
 
 export interface DailyPlanResponse {
