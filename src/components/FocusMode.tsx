@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import { Task } from '@/types'
-import { X, Play, Pause, RotateCcw, Volume2, VolumeX, CheckCircle } from 'lucide-react'
+import { X, Play, Pause, RotateCcw, Volume2, VolumeX, CheckCircle, Maximize2, Minimize2 } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { getBeijingTime } from '@/lib/timezone'
 
@@ -21,14 +22,38 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
   const [totalTime, setTotalTime] = useState(0)
   const [isMuted, setIsMuted] = useState(false)
   const [showCompletion, setShowCompletion] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  // 禁用页面滚动
+  // 初始化和清理
   useEffect(() => {
+    setMounted(true)
     document.body.style.overflow = 'hidden'
+    
+    // 全屏变化监听
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange)
+    document.addEventListener('MSFullscreenchange', handleFullscreenChange)
+    
     return () => {
       document.body.style.overflow = 'unset'
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange)
+      document.removeEventListener('MSFullscreenchange', handleFullscreenChange)
+      
+      // 退出全屏
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {})
+      }
     }
   }, [])
 
@@ -153,10 +178,46 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
     return `${minutes}:${secs.toString().padStart(2, '0')}`
   }
 
+  // 全屏功能
+  const toggleFullscreen = async () => {
+    if (!containerRef.current) return
+    
+    try {
+      if (!document.fullscreenElement) {
+        // 进入全屏
+        if (containerRef.current.requestFullscreen) {
+          await containerRef.current.requestFullscreen()
+        } else if ((containerRef.current as any).webkitRequestFullscreen) {
+          await (containerRef.current as any).webkitRequestFullscreen()
+        } else if ((containerRef.current as any).mozRequestFullScreen) {
+          await (containerRef.current as any).mozRequestFullScreen()
+        } else if ((containerRef.current as any).msRequestFullscreen) {
+          await (containerRef.current as any).msRequestFullscreen()
+        }
+      } else {
+        // 退出全屏
+        if (document.exitFullscreen) {
+          await document.exitFullscreen()
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen()
+        } else if ((document as any).mozCancelFullScreen) {
+          await (document as any).mozCancelFullScreen()
+        } else if ((document as any).msExitFullscreen) {
+          await (document as any).msExitFullscreen()
+        }
+      }
+    } catch (error) {
+      console.error('全屏切换失败:', error)
+    }
+  }
+
   const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0
 
-  return (
-    <div className="fixed inset-0 z-[9999] bg-gray-900 w-screen h-screen">
+  // 只在客户端渲染
+  if (!mounted) return null
+
+  const focusModeContent = (
+    <div ref={containerRef} className="fixed inset-0 z-[9999] bg-gray-900 w-screen h-screen overflow-hidden">
       {/* 隐藏的音频元素 */}
       <audio ref={audioRef} preload="auto">
         <source src="/notification.mp3" type="audio/mpeg" />
@@ -175,14 +236,25 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
                   size="icon"
                   onClick={() => setIsMuted(!isMuted)}
                   className="text-gray-400 hover:text-white"
+                  title={isMuted ? "开启声音" : "静音"}
                 >
                   {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
+                  onClick={toggleFullscreen}
+                  className="text-gray-400 hover:text-white"
+                  title={isFullscreen ? "退出全屏" : "全屏"}
+                >
+                  {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={onClose}
                   className="text-gray-400 hover:text-white"
+                  title="关闭"
                 >
                   <X className="w-5 h-5" />
                 </Button>
@@ -309,4 +381,7 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
       </div>
     </div>
   )
+
+  // 使用 Portal 渲染到 body
+  return createPortal(focusModeContent, document.body)
 }
