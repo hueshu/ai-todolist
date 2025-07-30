@@ -9,6 +9,7 @@ import { CalendarView } from '@/components/CalendarView'
 import { AIAssistant } from '@/components/AIAssistant'
 import { FixedEventManager } from '@/components/FixedEventManager'
 import { DatabaseTest } from '@/components/DatabaseTest'
+import { TaskPoolTabs } from '@/components/TaskPoolTabs'
 import { useDataLoader } from '@/hooks/useDataLoader'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Brain, Calendar, FolderOpen, Home as HomeIcon, BarChart3, ListTodo, Clock } from 'lucide-react'
@@ -131,11 +132,7 @@ export default function Home() {
                 <h2 className="text-lg sm:text-2xl font-bold text-gray-800">任务池</h2>
               </div>
               
-              <div className="mb-4 sm:mb-8">
-                <TaskInput />
-              </div>
-              
-              <TaskList filter="pool" />
+              <TaskPoolTabs />
             </div>
           </TabsContent>
           
