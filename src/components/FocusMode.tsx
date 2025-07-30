@@ -26,6 +26,14 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
+  // 禁用页面滚动
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [])
+
   // 计算任务时长（分钟）
   const calculateDuration = () => {
     if (task.timeSlot) {
@@ -150,15 +158,29 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
   const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0
 
   return (
-    <div className="fixed inset-0 z-50 bg-gray-900 flex items-center justify-center p-4 sm:p-6">
-      {/* 隐藏的音频元素 */}
-      <audio ref={audioRef} preload="auto">
-        <source src="/notification.mp3" type="audio/mpeg" />
-        <source src="/notification.ogg" type="audio/ogg" />
-      </audio>
+    <>
+      {/* 专注模式全屏背景 */}
+      <div 
+        className="fixed inset-0 bg-gray-900 z-[9999]"
+        style={{ 
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100vh'
+        }}
+      >
+        {/* 隐藏的音频元素 */}
+        <audio ref={audioRef} preload="auto">
+          <source src="/notification.mp3" type="audio/mpeg" />
+          <source src="/notification.ogg" type="audio/ogg" />
+        </audio>
 
-      <div className="w-full max-w-md mx-auto text-white">
-        <div className="space-y-6">
+        <div className="w-full h-full flex items-center justify-center p-4 sm:p-6 overflow-auto">
+          <div className="w-full max-w-md mx-auto text-white">
+            <div className="space-y-6">
           {/* 头部 */}
           <div className="flex items-center justify-between">
             <h2 className="text-xl sm:text-2xl font-semibold">专注模式</h2>
@@ -296,9 +318,10 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
             <p className="text-center text-sm text-gray-400 mt-2">
               {Math.round(progress)}% 完成
             </p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
