@@ -129,7 +129,7 @@ ${todayFixedEvents.map(e => `${e.startTime}-${e.endTime}: ${e.title}`).join('\n'
 
 待安排任务（共${body.existingTasks.length}个）：
 ${tasksWithFullInfo.slice(0, 20).map(t => 
-  `- ${t.title} (${t.estimatedHours}h, ${t.priority}优先级${t.project ? `, 项目:${t.project.name}` : ''}${t.dependencies.length > 0 ? `, 依赖其他任务` : ''})`
+  `- [ID: ${t.id}] ${t.title} (${t.estimatedHours}h, ${t.priority}优先级${t.project ? `, 项目:${t.project.name}` : ''}${t.dependencies.length > 0 ? `, 依赖其他任务` : ''})`
 ).join('\n')}${tasksWithFullInfo.length > 20 ? `\n...还有${tasksWithFullInfo.length - 20}个任务` : ''}
 
 ${body.userPreferences ? `用户偏好：${body.userPreferences}\n` : ''}
@@ -143,10 +143,17 @@ ${body.strictRequirements ? `⚠️ 严格执行要求（必须遵守）：${bod
 5. 遵守任务依赖关系
 6. 在精力好的时段安排重要任务
 
-返回JSON（只包含能在今天完成的任务）：
+返回JSON格式要求：
+1. taskId必须使用上面任务列表中的实际ID（方括号内的ID值）
+2. 不要使用任务标题作为taskId
+3. 休息时间的taskId固定为"break"
+
+示例返回格式：
 {
   "schedule": [
-    {"timeSlot": "HH:mm-HH:mm", "taskId": "实际任务ID", "type": "focus/regular/break", "reason": "简短原因"}
+    {"timeSlot": "09:00-09:30", "taskId": "使用上面列表中[ID: xxx]的xxx部分", "type": "focus", "reason": "高优先级任务"},
+    {"timeSlot": "09:30-09:35", "taskId": "break", "type": "break", "reason": "休息时间"},
+    {"timeSlot": "09:35-10:05", "taskId": "另一个实际的任务ID", "type": "regular", "reason": "常规任务"}
   ],
   "suggestions": ["最多3条建议"],
   "estimatedProductivity": 75,
@@ -182,7 +189,13 @@ ${body.strictRequirements ? `⚠️ 严格执行要求（必须遵守）：${bod
     }
     
     const result = JSON.parse(messageContent)
-    console.log('Parsed result:', JSON.stringify(result, null, 2))
+    console.log('[AI响应] 原始结果:', JSON.stringify(result, null, 2))
+    console.log('[AI响应] 计划项数量:', result.schedule?.length || 0)
+    console.log('[AI响应] 计划项详情:', result.schedule?.map((item: any) => ({
+      taskId: item.taskId,
+      type: item.type,
+      timeSlot: item.timeSlot
+    })))
     
     if (!result.schedule || !Array.isArray(result.schedule)) {
       throw new Error('Invalid response format: missing or invalid schedule')
@@ -260,9 +273,15 @@ ${body.strictRequirements ? `⚠️ 严格执行要求（必须遵守）：${bod
     }).filter((item: any) => item !== null)
     
     // 处理返回的数据，确保taskId正确映射到任务
-    const scheduleItems = correctedSchedule.map((item: any) => {
+    console.log('[任务映射] 开始处理计划项，总数:', correctedSchedule.length)
+    console.log('[任务映射] 可用任务ID列表:', body.existingTasks.map(t => t.id))
+    
+    const scheduleItems = correctedSchedule.map((item: any, index: number) => {
+      console.log(`[任务映射] 处理第${index + 1}项:`, item)
+      
       // 如果是休息时间，创建一个休息任务
       if (item.type === 'break' || item.taskId === 'break') {
+        console.log('[任务映射] 识别为休息时间')
         return {
           timeSlot: item.timeSlot,
           task: {
@@ -283,7 +302,9 @@ ${body.strictRequirements ? `⚠️ 严格执行要求（必须遵守）：${bod
       // 查找实际任务
       const task = body.existingTasks.find(t => t.id === item.taskId)
       if (!task) {
-        console.warn(`Task not found: ${item.taskId}`)
+        console.error(`[任务映射] 未找到任务 ID: ${item.taskId}`)
+        console.log('[任务映射] 任务类型:', item.type)
+        console.log('[任务映射] 原因:', item.reason)
         return null
       }
       
