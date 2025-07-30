@@ -10,7 +10,6 @@ import { AIAssistant } from '@/components/AIAssistant'
 import { FixedEventManager } from '@/components/FixedEventManager'
 import { DatabaseTest } from '@/components/DatabaseTest'
 import { TaskPoolTabs } from '@/components/TaskPoolTabs'
-import { DebugTasks } from '@/components/DebugTasks'
 import { useDataLoader } from '@/hooks/useDataLoader'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Brain, Calendar, FolderOpen, Home as HomeIcon, BarChart3, ListTodo, Clock } from 'lucide-react'
@@ -116,12 +115,6 @@ export default function Home() {
           <TabsContent value="dashboard" className="space-y-3 sm:space-y-6">
             <div className="bg-white/80 backdrop-blur-sm rounded-lg sm:rounded-2xl shadow-lg border border-white/20 p-3 sm:p-6">
               <TodayTaskList />
-            </div>
-            
-            {/* 临时调试组件 - 显示所有任务 */}
-            <div className="bg-yellow-50 rounded-lg p-4">
-              <h3 className="text-lg font-semibold mb-2 text-yellow-800">调试信息（临时）</h3>
-              <DebugTasks />
             </div>
             {/* 系统检测 - 仅在开发环境显示 */}
             {process.env.NODE_ENV === 'development' && (
