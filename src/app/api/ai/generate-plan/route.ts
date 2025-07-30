@@ -123,9 +123,10 @@ export async function POST(request: NextRequest) {
 - 结束时间：${workEndTime}
 - 番茄工作法：25-30分钟工作 + 5分钟休息
 
-${todayFixedEvents.length > 0 ? `固定事件（避开这些时间）：
+${todayFixedEvents.length > 0 ? `🚫 固定事件（必须避开，不可占用）：
 ${todayFixedEvents.map(e => `${e.startTime}-${e.endTime}: ${e.title}`).join('\n')}
 ` : ''}
+${todayFixedEvents.length === 0 ? '提示：未设置固定事件。建议添加午餐（12:00-13:00）、晚餐（18:00-19:00）等固定时间\n' : ''}
 
 待安排任务（共${body.existingTasks.length}个）：
 ${tasksWithFullInfo.slice(0, 20).map(t => 
@@ -135,13 +136,16 @@ ${tasksWithFullInfo.slice(0, 20).map(t =>
 ${body.userPreferences ? `用户偏好：${body.userPreferences}\n` : ''}
 ${body.strictRequirements ? `⚠️ 严格执行要求（必须遵守）：${body.strictRequirements}\n` : ''}
 
-安排原则：
-1. 最高优先级：严格执行要求中的内容必须完全遵守
-2. 优先安排：紧急任务、每日/每周重复任务、有截止日期的任务
-3. 考虑项目优先级和用户偏好，但保持灵活性
-4. 长任务可分段，使用相同taskId
-5. 遵守任务依赖关系
-6. 在精力好的时段安排重要任务
+安排原则（按优先级排序）：
+1. 必须遵守：固定事件时间（如吃饭、会议等）不能被任何任务占用
+2. 必须遵守：严格执行要求中的内容必须完全满足
+3. 优先安排：紧急任务、每日/每周重复任务、有截止日期的任务
+4. 考虑项目优先级和用户偏好，但保持灵活性
+5. 长任务可分段，使用相同taskId
+6. 遵守任务依赖关系
+7. 在精力好的时段安排重要任务
+
+重要提醒：固定事件（如午餐、晚餐）是不可协商的，必须保留这些时间段
 
 返回JSON格式要求：
 1. taskId必须使用上面任务列表中的实际ID（方括号内的ID值）
