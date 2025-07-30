@@ -29,63 +29,31 @@ export default function Home() {
         <Tabs defaultValue="dashboard" className="space-y-3 sm:space-y-6">
           {/* 移动端和桌面端不同的标签栏 */}
           <div className="flex justify-center">
-            {/* 移动端标签栏 - 两行布局 */}
+            {/* 移动端标签栏 - 只显示3个主要选项 */}
             <div className="block md:hidden w-full max-w-sm mx-auto px-2">
-              <div className="flex flex-col items-center gap-2">
-                <TabsList className="grid grid-cols-4 gap-1 bg-white/90 backdrop-blur-sm shadow-lg rounded-xl p-1 w-full">
-                  <TabsTrigger 
-                    value="dashboard" 
-                    className="flex flex-col items-center gap-1 px-2 py-3 text-xs rounded-lg transition-all hover:bg-blue-50 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
-                  >
-                    <HomeIcon className="w-4 h-4" />
-                    <span className="text-xs">今日</span>
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="tasks" 
-                    className="flex flex-col items-center gap-1 px-2 py-3 text-xs rounded-lg transition-all hover:bg-blue-50 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
-                  >
-                    <ListTodo className="w-4 h-4" />
-                    <span className="text-xs">任务池</span>
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="projects" 
-                    className="flex flex-col items-center gap-1 px-2 py-3 text-xs rounded-lg transition-all hover:bg-blue-50 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
-                  >
-                    <FolderOpen className="w-4 h-4" />
-                    <span className="text-xs">项目</span>
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="ai" 
-                    className="flex flex-col items-center gap-1 px-2 py-3 text-xs rounded-lg transition-all hover:bg-blue-50 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
-                  >
-                    <Brain className="w-4 h-4" />
-                    <span className="text-xs">AI助手</span>
-                  </TabsTrigger>
-                </TabsList>
-                <TabsList className="grid grid-cols-3 gap-1 bg-white/90 backdrop-blur-sm shadow-lg rounded-xl p-1 w-full max-w-xs">
-                  <TabsTrigger 
-                    value="calendar" 
-                    className="flex flex-col items-center gap-1 px-2 py-3 text-xs rounded-lg transition-all hover:bg-blue-50 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
-                  >
-                    <Calendar className="w-4 h-4" />
-                    <span className="text-xs">日历</span>
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="fixed-events" 
-                    className="flex flex-col items-center gap-1 px-2 py-3 text-xs rounded-lg transition-all hover:bg-blue-50 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
-                  >
-                    <Clock className="w-4 h-4" />
-                    <span className="text-xs">固定事件</span>
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="analytics" 
-                    className="flex flex-col items-center gap-1 px-2 py-3 text-xs rounded-lg transition-all hover:bg-blue-50 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
-                  >
-                    <BarChart3 className="w-4 h-4" />
-                    <span className="text-xs">分析</span>
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+              <TabsList className="grid grid-cols-3 gap-1 bg-white/90 backdrop-blur-sm shadow-lg rounded-xl p-1 w-full">
+                <TabsTrigger 
+                  value="dashboard" 
+                  className="flex flex-col items-center gap-1 px-2 py-3 text-xs rounded-lg transition-all hover:bg-blue-50 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+                >
+                  <HomeIcon className="w-4 h-4" />
+                  <span className="text-xs">今日</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="tasks" 
+                  className="flex flex-col items-center gap-1 px-2 py-3 text-xs rounded-lg transition-all hover:bg-blue-50 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+                >
+                  <ListTodo className="w-4 h-4" />
+                  <span className="text-xs">任务池</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="ai" 
+                  className="flex flex-col items-center gap-1 px-2 py-3 text-xs rounded-lg transition-all hover:bg-blue-50 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+                >
+                  <Brain className="w-4 h-4" />
+                  <span className="text-xs">AI助手</span>
+                </TabsTrigger>
+              </TabsList>
             </div>
 
             {/* 桌面端标签栏 - 单行布局 */}
