@@ -12,6 +12,7 @@ import { DatabaseTest } from '@/components/DatabaseTest'
 import { TaskPoolTabs } from '@/components/TaskPoolTabs'
 import { TaskRecovery } from '@/components/TaskRecovery'
 import { AllTasksDebug } from '@/components/AllTasksDebug'
+import { TodayTasksDebug } from '@/components/TodayTasksDebug'
 import { useDataLoader } from '@/hooks/useDataLoader'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Brain, Calendar, FolderOpen, Home as HomeIcon, BarChart3, ListTodo, Clock } from 'lucide-react'
@@ -124,6 +125,9 @@ export default function Home() {
             
             {/* 所有任务调试视图 */}
             <AllTasksDebug />
+            
+            {/* 今日任务调试视图 */}
+            <TodayTasksDebug />
             
             {/* 系统检测 - 仅在开发环境显示 */}
             {process.env.NODE_ENV === 'development' && (

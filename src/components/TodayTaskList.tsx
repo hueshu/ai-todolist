@@ -294,9 +294,7 @@ function TaskItem({ task, onFocusMode }: { task: Task; onFocusMode?: (task: Task
   const industry = project?.industryId ? industries.find(i => i.id === project.industryId) : null
   
   // 调试日志
-  if (task.projectId) {
-    console.log('Task:', task.title, 'ProjectId:', task.projectId, 'Project:', project?.name, 'Industry:', industry?.name)
-  }
+  console.log('Task:', task.title, 'ProjectId:', task.projectId, 'Project:', project?.name, 'Industry:', industry?.name)
   
   const priorityColors: Record<Task['priority'], string> = {
     urgent: 'border-red-300 bg-red-50',
