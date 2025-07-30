@@ -31,7 +31,7 @@ async function callAI(prompt: string, provider: 'openai' | 'claude' = 'openai') 
   
   if (provider === 'claude') {
     const claude = getClaude()
-    const modelName = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022'
+    const modelName = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514'
     console.log('Using Claude model:', modelName)
     
     const message = await claude.messages.create({

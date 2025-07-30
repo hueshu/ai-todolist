@@ -251,12 +251,12 @@ export function AIAssistant() {
                 >
                   <div className="flex items-center justify-center gap-2">
                     <span>🎭</span>
-                    <span>Claude 3.5</span>
+                    <span>Claude 4</span>
                   </div>
                 </button>
               </div>
               <p className="text-xs text-gray-500 mt-1 text-center">
-                {aiProvider === 'openai' ? '使用 OpenAI 的 GPT 模型' : '使用 Anthropic 的 Claude 3.5 Sonnet'}
+                {aiProvider === 'openai' ? '使用 OpenAI 的 GPT 模型' : '使用 Anthropic 的 Claude Sonnet 4'}
               </p>
             </div>
             
