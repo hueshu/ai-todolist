@@ -16,8 +16,12 @@ export function TaskRecovery() {
   
   const handleRecover = () => {
     inProgressTasks.forEach(task => {
-      // 将所有 in-progress 的任务恢复为 scheduled 状态
-      updateTask(task.id, { status: 'scheduled' })
+      // 将所有 in-progress 的任务恢复为 pool 状态（任务池）
+      updateTask(task.id, { 
+        status: 'pool',
+        timeSlot: undefined,
+        scheduledStartTime: undefined
+      })
     })
     setRecovered(true)
     setTimeout(() => setRecovered(false), 3000)
@@ -50,13 +54,13 @@ export function TaskRecovery() {
               variant="outline"
             >
               <RotateCcw className="w-4 h-4 mr-2" />
-              恢复所有任务
+              恢复到任务池
             </Button>
           )}
           
           {recovered && (
             <p className="text-sm text-green-600 text-center">
-              ✓ 已恢复 {inProgressTasks.length} 个任务
+              ✓ 已恢复 {inProgressTasks.length} 个任务到任务池
             </p>
           )}
           

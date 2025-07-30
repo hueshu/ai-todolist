@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { TaskInput } from './TaskInput'
 import { TaskList } from './TaskList'
+import { PoolTaskList } from './PoolTaskList'
 import { CheckCircle2, Circle } from 'lucide-react'
 import { useStore } from '@/lib/store'
 
@@ -11,7 +12,7 @@ export function TaskPoolTabs() {
   const tasks = useStore((state) => state.tasks)
   
   // 计算待处理和已完成任务数量
-  const pendingCount = tasks.filter(task => task.status !== 'completed').length
+  const pendingCount = tasks.filter(task => task.status === 'pool').length
   const completedCount = tasks.filter(task => task.status === 'completed').length
   
   return (
@@ -37,7 +38,7 @@ export function TaskPoolTabs() {
         <div className="mb-4 sm:mb-8">
           <TaskInput />
         </div>
-        <TaskList filter="pool" />
+        <PoolTaskList />
       </TabsContent>
       
       <TabsContent value="completed" className="space-y-4">
