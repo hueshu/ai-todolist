@@ -369,6 +369,14 @@ export function TaskList({ filter = 'all' }: { filter?: 'all' | 'pool' | 'schedu
                           {new Date(task.deadline).toLocaleDateString('zh-CN')}
                         </span>
                       )}
+                      
+                      {/* 完成时间 - 只在已完成任务中显示 */}
+                      {task.status === 'completed' && task.completedAt && (
+                        <span className="flex items-center gap-1 text-green-600">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          完成于 {new Date(task.completedAt).toLocaleDateString('zh-CN')} {new Date(task.completedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
                     </div>
                     
                   </div>
