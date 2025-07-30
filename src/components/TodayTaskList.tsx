@@ -15,7 +15,6 @@ import { getBeijingTime, isBeijingToday } from '@/lib/timezone'
 import { FocusMode } from './FocusMode'
 
 export function TodayTaskList() {
-  const [showCompleted, setShowCompleted] = useState(true)
   const [isAddingTask, setIsAddingTask] = useState(false)
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [focusTask, setFocusTask] = useState<Task | null>(null)
@@ -83,22 +82,10 @@ export function TodayTaskList() {
   
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold flex items-center gap-2">
-          <Calendar className="w-5 h-5" />
-          今日任务
-        </h2>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            console.log('Button clicked, current showCompleted:', showCompleted)
-            setShowCompleted(!showCompleted)
-          }}
-        >
-          {showCompleted ? '隐藏已完成' : '显示已完成'}
-        </Button>
-      </div>
+      <h2 className="text-xl font-semibold flex items-center gap-2">
+        <Calendar className="w-5 h-5" />
+        今日任务
+      </h2>
       
       {hasUrgentTasks && (
         <Card className="border-red-200 bg-red-50">
@@ -153,8 +140,8 @@ export function TodayTaskList() {
             </div>
           )}
           
-          {/* 已完成任务 - 只在 showCompleted 为 true 时显示 */}
-          {showCompleted && completedTasks.length > 0 && (
+          {/* 已完成任务 */}
+          {completedTasks.length > 0 && (
             <div>
               <p className="text-sm font-medium mb-2 flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
