@@ -233,23 +233,29 @@ ${body.strictRequirements ? `⚠️ 严格执行要求（必须遵守）：${bod
 2. 不要使用任务标题作为taskId
 3. 休息时间的taskId固定为"break"
 
-示例返回格式（注意任务时长的安排）：
+reason字段要求（为用户解释为什么这样安排）：
+- 说明为什么放在这个时间段（如：早晨精力充沛、下午适合创意工作等）
+- 说明任务的紧急程度或重要性
+- 如果是分段任务，说明是第几部分
+- 考虑用户的工作节奏和偏好
+
+示例返回格式（注意reason要有实际意义）：
 {
   "schedule": [
-    {"timeSlot": "09:00-09:30", "taskId": "task-id-1", "type": "focus", "reason": "高优先级任务-第1部分(0.5h)"},
-    {"timeSlot": "09:30-10:00", "taskId": "task-id-1", "type": "focus", "reason": "高优先级任务-第2部分(0.5h)"}, 
-    {"timeSlot": "10:00-10:05", "taskId": "break", "type": "break", "reason": "休息5分钟"},
-    {"timeSlot": "10:05-11:05", "taskId": "task-id-2", "type": "regular", "reason": "1小时任务完整安排"},
-    {"timeSlot": "11:05-11:10", "taskId": "break", "type": "break", "reason": "休息5分钟"},
-    {"timeSlot": "11:10-12:00", "taskId": "task-id-3", "type": "regular", "reason": "项目A的任务(0.83h)"},
-    {"timeSlot": "12:00-13:00", "taskId": "lunch", "type": "break", "reason": "午餐时间-固定事件"}
+    {"timeSlot": "09:00-09:30", "taskId": "task-id-1", "type": "focus", "reason": "早晨精力最充沛，适合处理高优先级任务（第1/2部分）"},
+    {"timeSlot": "09:30-10:00", "taskId": "task-id-1", "type": "focus", "reason": "连续完成避免思路中断（第2/2部分）"}, 
+    {"timeSlot": "10:00-10:05", "taskId": "break", "type": "break", "reason": "完成深度工作后短暂休息，恢复精力"},
+    {"timeSlot": "10:05-11:05", "taskId": "task-id-2", "type": "regular", "reason": "上午黄金时段，处理需要专注的常规任务"},
+    {"timeSlot": "11:05-11:10", "taskId": "break", "type": "break", "reason": "番茄工作法休息时间"},
+    {"timeSlot": "11:10-12:00", "taskId": "task-id-3", "type": "regular", "reason": "临近午餐，安排中等难度任务避免疲劳"},
+    {"timeSlot": "12:00-13:00", "taskId": "lunch", "type": "break", "reason": "午餐时间，保持能量"}
   ],
-  "suggestions": ["记住：每个任务的总时长必须等于其estimatedHours"],
+  "suggestions": ["建议下午2-4点安排创意类任务", "晚上适合总结和规划"],
   "estimatedProductivity": 85,
   "projectAnalysis": {
-    "highValueProjects": "重点关注的高优先级项目",
-    "timeAllocation": "根据任务和项目优先级分配时间",
-    "riskWarning": "检查是否所有任务都获得了足够时间"
+    "highValueProjects": "重点关注项目A和项目B",
+    "timeAllocation": "70%时间分配给高优先级项目",
+    "riskWarning": "项目C进度较慢，建议明天增加投入"
   }
 }`
 

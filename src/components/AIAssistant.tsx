@@ -409,8 +409,8 @@ export function AIAssistant() {
                            item.type === 'regular' ? '常规' : '休息'}
                         </span>
                       </div>
-                      <p className="text-xs sm:text-sm mt-1 truncate">{item.task.title}</p>
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.reason}</p>
+                      <p className="text-xs sm:text-sm mt-1 font-medium">{item.task.title}</p>
+                      <p className="text-xs text-muted-foreground mt-1 italic">💡 {item.reason}</p>
                     </div>
                   </div>
                 )
