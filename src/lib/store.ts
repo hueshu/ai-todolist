@@ -17,7 +17,8 @@ import {
   createIndustry as dbCreateIndustry,
   updateIndustry as dbUpdateIndustry,
   deleteIndustry as dbDeleteIndustry,
-  resetDailyTasks
+  resetDailyTasks,
+  resetTodayTasks
 } from './database'
 
 interface AppState {
@@ -117,11 +118,15 @@ export const useStore = create<AppState>((set, get) => ({
   
   loadAll: async () => {
     try {
-      // 先执行每日任务重置
+      // 先执行周期性任务重置
       await resetDailyTasks()
-      console.log('每日任务重置完成')
+      console.log('周期性任务重置完成')
+      
+      // 再执行今日任务重置
+      await resetTodayTasks()
+      console.log('今日任务重置完成')
     } catch (error) {
-      console.error('每日任务重置失败:', error)
+      console.error('任务重置失败:', error)
     }
     
     // 然后加载所有数据

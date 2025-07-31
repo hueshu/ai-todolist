@@ -7,7 +7,7 @@ import { TaskList } from './TaskList'
 import { PoolTaskList } from './PoolTaskList'
 import { CheckCircle2, Circle, RefreshCw } from 'lucide-react'
 import { useStore } from '@/lib/store'
-import { resetDailyTasks } from '@/lib/database'
+import { resetDailyTasks, resetTodayTasks } from '@/lib/database'
 import { Button } from '@/components/ui/button'
 import { TestResetButton } from './TestResetButton'
 
@@ -63,6 +63,41 @@ export function TaskPoolTabs() {
     }
   }
   
+  // 手动重置今日任务
+  const handleResetTodayTasks = async () => {
+    // 统计今日任务
+    const todayScheduledTasks = tasks.filter(task => 
+      task.status === 'scheduled' && task.timeSlot
+    )
+    
+    const todayInProgressTasks = tasks.filter(task => 
+      task.status === 'in-progress' && task.timeSlot
+    )
+    
+    const totalTodayTasks = todayScheduledTasks.length + todayInProgressTasks.length
+    
+    if (totalTodayTasks === 0) {
+      alert('没有需要重置的今日任务')
+      return
+    }
+    
+    if (!confirm(`找到 ${totalTodayTasks} 个今日任务：\n- ${todayScheduledTasks.length} 个计划中\n- ${todayInProgressTasks.length} 个进行中\n\n确定要将这些未完成的任务退回任务池吗？`)) {
+      return
+    }
+    
+    setIsResetting(true)
+    try {
+      await resetTodayTasks()
+      await loadTasks() // 重新加载任务列表
+      alert('今日任务已重置！未完成的任务已退回任务池。')
+    } catch (error) {
+      console.error('重置今日任务失败:', error)
+      alert('重置今日任务失败，请查看控制台了解详情')
+    } finally {
+      setIsResetting(false)
+    }
+  }
+  
   return (
     <Tabs defaultValue="pending" className="space-y-4">
       <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto">
@@ -86,7 +121,7 @@ export function TaskPoolTabs() {
         <div className="mb-4 sm:mb-8">
           <TaskInput />
         </div>
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-end gap-2 mb-4">
           <Button
             variant="outline"
             size="sm"
@@ -96,6 +131,16 @@ export function TaskPoolTabs() {
           >
             <RefreshCw className={`w-4 h-4 mr-1 ${isResetting ? 'animate-spin' : ''}`} />
             重置周期任务
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleResetTodayTasks}
+            disabled={isResetting}
+            className="text-xs"
+          >
+            <RefreshCw className={`w-4 h-4 mr-1 ${isResetting ? 'animate-spin' : ''}`} />
+            重置今日任务
           </Button>
         </div>
         <PoolTaskList />
