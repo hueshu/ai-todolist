@@ -45,17 +45,25 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
     const savedState = localStorage.getItem(`focus-mode-${task.id}`)
     if (savedState) {
       try {
-        const { startTime, pausedTime, isRunning: wasRunning, isPaused: wasPaused, totalTime: savedTotalTime } = JSON.parse(savedState)
+        const { startTime, pausedTime, pauseStartTime, isRunning: wasRunning, isPaused: wasPaused, totalTime: savedTotalTime } = JSON.parse(savedState)
         if (wasRunning && startTime) {
           // 恢复计时状态
           startTimeRef.current = startTime
           pausedTimeRef.current = pausedTime || 0
+          pauseStartTimeRef.current = pauseStartTime || 0
           setTotalTime(savedTotalTime || totalTime)
           setIsRunning(true)
           setIsPaused(wasPaused || false)
           
+          // 如果恢复时是暂停状态，需要更新暂停时间
+          if (wasPaused && pauseStartTime) {
+            // 计算从暂停开始到现在的时间，累加到pausedTime
+            const additionalPauseTime = Date.now() - pauseStartTime
+            pausedTimeRef.current += additionalPauseTime
+          }
+          
           // 计算已经过去的时间
-          const elapsed = Date.now() - startTime - pausedTime
+          const elapsed = Date.now() - startTime - pausedTimeRef.current
           const remaining = Math.max(0, (savedTotalTime || totalTime) * 1000 - elapsed)
           
           if (remaining > 0) {
@@ -218,6 +226,7 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
         localStorage.setItem(`focus-mode-${task.id}`, JSON.stringify({
           startTime: startTimeRef.current,
           pausedTime: pausedTimeRef.current,
+          pauseStartTime: pauseStartTimeRef.current,
           isRunning: isRunning,
           isPaused: isPaused,
           totalTime: totalTime
@@ -379,22 +388,25 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
     setIsPaused(false)
   }
 
+  // 添加一个ref来记录暂停开始的时间
+  const pauseStartTimeRef = useRef<number>(0)
+  
   const handlePause = () => {
     if (isRunning && !isPaused) {
-      // 记录暂停时已经过去的时间
-      const elapsedBeforePause = Date.now() - startTimeRef.current - pausedTimeRef.current
-      pausedTimeRef.current = elapsedBeforePause
+      // 记录暂停开始的时间
+      pauseStartTimeRef.current = Date.now()
       setIsPaused(true)
-      console.log('暂停任务，已用时:', Math.floor(elapsedBeforePause / 1000), '秒')
+      console.log('暂停任务')
     }
   }
 
   const handleResume = () => {
     if (isRunning && isPaused) {
-      // 重新计算开始时间，减去已经暂停的时间
-      startTimeRef.current = Date.now() - pausedTimeRef.current
+      // 计算暂停了多长时间，累加到总暂停时间
+      const pauseDuration = Date.now() - pauseStartTimeRef.current
+      pausedTimeRef.current += pauseDuration
       setIsPaused(false)
-      console.log('继续任务')
+      console.log('继续任务，本次暂停了', Math.floor(pauseDuration / 1000), '秒')
     }
   }
 
