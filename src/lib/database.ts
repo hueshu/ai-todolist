@@ -831,13 +831,16 @@ export async function resetTodayTasks(): Promise<void> {
       }
     } else if (task.status === 'scheduled' || task.status === 'in-progress') {
       // 检查任务是否是今天的
-      let isToday = false
+      let isToday = true // 默认保留任务，只有确定是过期任务才清理
       
+      // 优先检查scheduled_start_time（这是最准确的时间）
       if (task.scheduled_start_time) {
         isToday = isBeijingToday(new Date(task.scheduled_start_time))
       } else if (task.deadline) {
+        // 如果没有scheduled_start_time，检查deadline
         isToday = isBeijingToday(new Date(task.deadline))
       }
+      // 如果只有timeSlot没有其他时间信息，默认保留（认为是今天的）
       
       // 如果不是今天的任务，才处理
       if (!isToday) {
