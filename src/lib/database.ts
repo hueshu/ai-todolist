@@ -712,6 +712,71 @@ export async function resetDailyTasks(): Promise<void> {
   console.log(`[重置任务] 完成，共重置 ${resetCount} 个任务`)
 }
 
+// 清空今日任务功能（只清除时间安排，不改变任务池状态）
+export async function clearTodayTasks(): Promise<void> {
+  const userId = getCurrentUserId()
+  
+  console.log('[清空今日任务] 开始执行，用户ID:', userId)
+  
+  // 获取所有有时间安排的任务（scheduled或in-progress状态，且有timeSlot）
+  const { data: todayTasks, error: fetchError } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('user_id', userId)
+    .in('status', ['scheduled', 'in-progress'])
+    .not('time_slot', 'is', null)
+  
+  if (fetchError) {
+    console.error('[清空今日任务] 获取任务失败:', fetchError)
+    throw fetchError
+  }
+  
+  console.log('[清空今日任务] 找到待清空的任务数量:', todayTasks?.length || 0)
+  
+  let clearedCount = 0
+  let deletedSegments = 0
+  
+  for (const task of todayTasks || []) {
+    console.log(`[清空今日任务] 处理任务: ${task.title}, 是否分段: ${!!task.original_task_id}`)
+    
+    // 如果是分段任务，直接删除
+    if (task.original_task_id) {
+      const { error: deleteError } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', task.id)
+        .eq('user_id', userId)
+      
+      if (deleteError) {
+        console.error(`[清空今日任务] 删除分段任务失败: ${task.title}`, deleteError)
+      } else {
+        console.log(`[清空今日任务] 已删除分段任务: ${task.title}`)
+        deletedSegments++
+      }
+    } else {
+      // 普通任务，只清除时间相关信息，保持在任务池
+      const { error: updateError } = await supabase
+        .from('tasks')
+        .update({
+          status: 'pool',
+          time_slot: null,
+          scheduled_start_time: null
+        })
+        .eq('id', task.id)
+        .eq('user_id', userId)
+      
+      if (updateError) {
+        console.error(`[清空今日任务] 清除任务时间安排失败: ${task.title}`, updateError)
+      } else {
+        console.log(`[清空今日任务] 已清除任务时间安排: ${task.title}`)
+        clearedCount++
+      }
+    }
+  }
+  
+  console.log(`[清空今日任务] 完成，清空 ${clearedCount} 个任务，删除 ${deletedSegments} 个分段`)
+}
+
 // 重置今日任务功能
 export async function resetTodayTasks(): Promise<void> {
   const userId = getCurrentUserId()
@@ -719,8 +784,8 @@ export async function resetTodayTasks(): Promise<void> {
   
   console.log('[重置今日任务] 开始执行，用户ID:', userId, '当前时间:', now.toLocaleString('zh-CN'))
   
-  // 获取所有今日的任务（有timeSlot或scheduledStartTime的任务）
-  const { data: todayTasks, error: fetchError } = await supabase
+  // 获取所有有时间安排的任务
+  const { data: scheduledTasks, error: fetchError } = await supabase
     .from('tasks')
     .select('*')
     .eq('user_id', userId)
@@ -731,12 +796,13 @@ export async function resetTodayTasks(): Promise<void> {
     throw fetchError
   }
   
-  console.log('[重置今日任务] 找到今日任务数量:', todayTasks?.length || 0)
+  console.log('[重置今日任务] 找到有时间安排的任务数量:', scheduledTasks?.length || 0)
   
   let resetCount = 0
   let returnToPoolCount = 0
+  let deletedSegments = 0
   
-  for (const task of todayTasks || []) {
+  for (const task of scheduledTasks || []) {
     console.log(`[重置今日任务] 检查任务: ${task.title}, 状态: ${task.status}, 类型: ${task.task_type}`)
     
     // 根据任务状态处理
@@ -773,25 +839,41 @@ export async function resetTodayTasks(): Promise<void> {
         isToday = isBeijingToday(new Date(task.deadline))
       }
       
-      // 如果不是今天的任务，才退回任务池
+      // 如果不是今天的任务，才处理
       if (!isToday) {
-        // 未完成的非今日任务：退回任务池
-        const { error: updateError } = await supabase
-          .from('tasks')
-          .update({
-            status: 'pool',
-            time_slot: null,
-            scheduled_start_time: null,
-            deadline: null
-          })
-          .eq('id', task.id)
-          .eq('user_id', userId)
-        
-        if (updateError) {
-          console.error(`[重置今日任务] 退回任务池失败: ${task.title}`, updateError)
+        // 如果是分段任务，删除
+        if (task.original_task_id) {
+          const { error: deleteError } = await supabase
+            .from('tasks')
+            .delete()
+            .eq('id', task.id)
+            .eq('user_id', userId)
+          
+          if (deleteError) {
+            console.error(`[重置今日任务] 删除过期分段任务失败: ${task.title}`, deleteError)
+          } else {
+            console.log(`[重置今日任务] 已删除过期分段任务: ${task.title}`)
+            deletedSegments++
+          }
         } else {
-          console.log(`[重置今日任务] 退回任务池（非今日任务）: ${task.title}`)
-          returnToPoolCount++
+          // 普通任务：退回任务池
+          const { error: updateError } = await supabase
+            .from('tasks')
+            .update({
+              status: 'pool',
+              time_slot: null,
+              scheduled_start_time: null,
+              deadline: null
+            })
+            .eq('id', task.id)
+            .eq('user_id', userId)
+          
+          if (updateError) {
+            console.error(`[重置今日任务] 退回任务池失败: ${task.title}`, updateError)
+          } else {
+            console.log(`[重置今日任务] 退回任务池（非今日任务）: ${task.title}`)
+            returnToPoolCount++
+          }
         }
       } else {
         console.log(`[重置今日任务] 保留今日未完成任务: ${task.title}`)
@@ -799,7 +881,7 @@ export async function resetTodayTasks(): Promise<void> {
     }
   }
   
-  console.log(`[重置今日任务] 完成，清理 ${resetCount} 个已完成任务，退回 ${returnToPoolCount} 个未完成任务`)
+  console.log(`[重置今日任务] 完成，清理 ${resetCount} 个已完成任务，退回 ${returnToPoolCount} 个未完成任务，删除 ${deletedSegments} 个过期分段`)
 }
 
 export const createTaskCompletionHistory = taskCompletionHistoryService.create

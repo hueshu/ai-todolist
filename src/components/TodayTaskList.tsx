@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import { useStore } from '@/lib/store'
-import { createTaskCompletionHistory } from '@/lib/database'
+import { createTaskCompletionHistory, clearTodayTasks } from '@/lib/database'
 import { TaskList } from './TaskList'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { isToday } from 'date-fns'
-import { Calendar, Clock, CheckCircle, Circle, AlertTriangle, Plus, Target, Undo2, FolderOpen, Building2 } from 'lucide-react'
+import { Calendar, Clock, CheckCircle, Circle, AlertTriangle, Plus, Target, X, FolderOpen, Building2 } from 'lucide-react'
 import { cn, recalculateSubsequentTasks } from '@/lib/utils'
 import { Task } from '@/types'
 import { v4 as uuidv4 } from 'uuid'
@@ -93,18 +93,30 @@ export function TodayTaskList() {
     setIsAddingTask(false)
   }
   
-  // 批量撤回所有未完成任务到任务池
-  const handleReturnAllToPool = () => {
-    if (!confirm('确定要将所有未完成任务撤回到任务池吗？')) return
+  // 清空所有未完成任务
+  const handleClearTodayTasks = async () => {
+    const segmentTasksCount = pendingTasks.filter(task => task.originalTaskId).length
+    const normalTasksCount = pendingTasks.filter(task => !task.originalTaskId).length
     
-    pendingTasks.forEach(task => {
-      updateTask(task.id, {
-        status: 'pool',
-        timeSlot: undefined,
-        scheduledStartTime: undefined,
-        deadline: undefined
-      })
-    })
+    let message = '确定要清空今日所有未完成任务吗？\n\n'
+    if (segmentTasksCount > 0) {
+      message += `• ${segmentTasksCount} 个分段任务将被删除\n`
+    }
+    if (normalTasksCount > 0) {
+      message += `• ${normalTasksCount} 个任务将清除时间安排并保留在任务池中`
+    }
+    
+    if (!confirm(message)) return
+    
+    try {
+      await clearTodayTasks()
+      // 重新加载任务列表
+      const loadTasks = useStore.getState().loadTasks
+      await loadTasks()
+    } catch (error) {
+      console.error('清空今日任务失败:', error)
+      alert('清空今日任务失败，请查看控制台了解详情')
+    }
   }
   
   return (
@@ -118,11 +130,11 @@ export function TodayTaskList() {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleReturnAllToPool}
+            onClick={handleClearTodayTasks}
             className="text-xs"
           >
-            <Undo2 className="w-4 h-4 mr-1" />
-            全部撤回
+            <X className="w-4 h-4 mr-1" />
+            清空
           </Button>
         )}
       </div>
