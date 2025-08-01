@@ -266,32 +266,40 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
   const playNotificationSound = () => {
     if (isMuted) return
     
-    // 添加手机振动（如果支持）
+    // 添加手机振动（如果支持）- 连续振动模式
     if ('vibrate' in navigator) {
-      // 振动模式：震动200ms，停止100ms，再震动200ms
-      navigator.vibrate([200, 100, 200])
+      // 振动模式：连续5次振动，每次200ms，间隔100ms
+      navigator.vibrate([200, 100, 200, 100, 200, 100, 200, 100, 200])
       console.log('手机振动已触发')
     }
     
     // 使用多种方式尝试播放声音
     const playAudioWithMultipleMethods = async () => {
-      // 方法1：创建新的 Audio 对象并立即播放
+      // 方法1：连续播放Base64音频
       try {
-        const audio = new Audio()
-        audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAAAAgAQZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBCxx0fPTizAAGGS48OmxYBwJQJzf8cNuJAYrdM/y3I5FCxZat+zqrE4GCEec4Cm3diMDJ3DE9NKPQAkUXLPq66hVFApGnt/yvmwhBCxx0fPTizAAGGS48OmwYRwJQZ3g8cNtIwUrdM/y3I5FCxVat+zqrE4GCEed3/G/bSECKHLN89OOQQ0WZLzx7LE+ggJPqOLvsGEcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8N+RQAoUXrTp66hVFApGnt/yv2wiBCxx0fPTizAAGGG48OmxYBwJQJve8cNwJAYrdM/y3I5FCxZat+zqrE4GCEed4PG/bSECKHLN89OOQQ0WZLzx7LE+ggJPqOLwsGAcBj+a2/LDciUFLIHO8tiJNwgZZ7vs559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8N+RQAoUXrTp66hVFApGnt/yv2wiBCxx0fPTizAAGGG48OmxYBwJQJzf8cNuJAYrdM/y3I5FCxZat+zqrE4GCEed3/G/bSECKHLN89OOQQ0WZLzx7LE+ggJPqOLwsGAcBj+a2/LDciUFLIHO8tiJNwgZZ7vs559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8N+RQAoUXrTp66hVFApGnt/yv2wiBCxx0fPTizAAGGG48OmxYBwJQJzf8cNuJAYrdM/y3I5FCxZat+zqrE4GCEed3/G/bSEDJ3PN89OOQQ0WZLzx7LE+ggJPqOLwsGAcBj+a2/LDciUFLIHO8tiJNwgZZ7vs559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8N+RQAoUXrTp66hVFApGnt/yv2wiBCxx0fPTizAAGGG48OmxYBwJQJzf8cNuJAYrdM/y3I5FCxZat+zqrE4GCEed3/G/bSEDJ3PN89OOQQ0WZLzx7LE+ggJPqOLwsGAcBj+a2/LDciUFLIHO8tiJNwgZaLvs559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8N+RQAoUXrTp66hVFApGnt/yv2wiBCxx0fPTizAAGGG48OmxYBwJQJzf8cNuJAYrdM/y3I5FCxZat+zqrE4GCEec3/G/bSEDJ3PN89OOQQ0WZLzx7LE+ggJPqOLwsGAcBj+a2/LDciUFLIHO8tiJNwgZaLvs559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8N2RQAoUXrTp66hVFApGnt/yv2wiBCxx0fPTizAAGGG48OmxYBwJQJzf8cNuJAYrdM/y3I5FCxZat+zqrE4GCEec3/G/bSEDJ3PN89OOQQ0WZLzx7LE+ggJPqOLwsGAcBj+a2/LDciUFLIHO8tiJNwgZaLvs559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8N2RQAoUXrTp66hVFApGnt/yv2wiBCxx0fPTizAAGGG48OmxYBwJQJzf8cNuJAYrdM/y3I5FCxZat+zqrE4GCEec3/G/bSEDJ3PN89OOQQ0WZLzx7LE+ggJPqOLwsGAcBj+a2/LDciUFLIHO8tiJOQcZaLvs559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8N2RQAoUXrTp66hVFApGnt/yv2wiBCxx0fPTizAAGGG48OmxYBwJQJzf8cNuJAYrdM/y3I5FCxZat+zqrE4GCEec3/G/bSEDJ3PN89OOQQ0WZLzx7LE+gwBPqOLwsGAcBj+a2/LDciUFLIHO8tiJOQcZaLvs559NEAxPqOPwtmMcBjiP1/PMeS0GI3fH8N2RQAoUXrTp66hVFApGnt/yv2wiBCxy0fPSizAAGGG48OmxYBwJQJzf8cNuJAYrdM/y3I5FCxZat+zqrE4GCEec3/O/ayEEKHPN89OOQQ0WZLzx7LE+gwBPqOLwsGAcBj+a2/LDciUFLIHO8tiJOQcZaLvs559NEQxPpuPwtmMcBjiP1/PMeS0GI3fH8N2RQAoUXrTp66hVFApGnt/yv2wiBCxy0fPSizAAGGG48OmxYBwJQJzf8cNuJAYrdM/y3I5FCxZat+zqrE4GCEec3/O/ayEEKHPN89OOQg0WY7zx7LE+gwBPqOLwsGAcBj+a2/LDciUFLIHO8tiJOQcZaLvs559NEQxPpuPwtmMcBjiP1/PMeS0GI3fH8N2RQAoUXrTp66hVFApGnt/yv2wiBCxy0fPSizAAGGG48OmxYBwJQJzf8cNuJAYrdM/y3I5FCxZat+zqrE4GCEec3/O/ayEEKHPN89OOQg0WY7zx7LE+gwBPqOLwsGAcBj+a2/LDciUGK4LO8tiIOQcZaLvs559NEQxPpuPwtmMcBjiP1/PMeS0GI3fH8N2RQAoUXrTp66hVFApGnt/yv2wiBCxy0fPSizAAGGG48OmxYBwJQJzf8cNuJAYrdM/y3I5FCxZat+zqrE4GCEec3/O/ayEEKHPN89OOQg0WY7zx7LE+gwBPqOLwsGAcBj+a2/LDciUGK4LO8tiIOQcZaLvs559NEQxPpuPwtmMcBjiP1/PMeS0GI3fH8N2RQAoUXrTp66hVFApGnt/yv2wiBCxy0fPSizAAGGG48OmxYBwJQJzf8cNuJAYrdM/y3YxFChVat+zqrE4GCEec3/O/ayEEKHPN89OOQg0WY7zx7LE9'
+        const playCount = 5 // 播放5次
+        const playInterval = 600 // 每次间隔600ms
         
-        // 预先设置音量
-        audio.volume = 0.5
+        for (let i = 0; i < playCount; i++) {
+          setTimeout(async () => {
+            try {
+              const audio = new Audio()
+              audio.src = 'data:audio/wav;base64,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'
+              audio.volume = 0.5
+              await audio.play()
+              console.log(`Base64音频播放成功 (${i + 1}/${playCount})`)
+            } catch (e) {
+              console.log(`Base64音频播放失败 (${i + 1}/${playCount}):`, e)
+            }
+          }, i * playInterval)
+        }
         
-        // 使用 Promise 来处理播放
-        await audio.play()
-        console.log('Base64音频播放成功')
         return true
       } catch (e) {
-        console.log('Base64音频播放失败:', e)
+        console.log('Base64音频设置失败:', e)
       }
       
-      // 方法2：使用 Web Audio API 生成提示音
+      // 方法2：使用 Web Audio API 生成连续提示音
       try {
         const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
         
@@ -300,56 +308,36 @@ export function FocusMode({ task, onClose, onComplete }: FocusModeProps) {
           await audioContext.resume()
         }
         
-        // 创建一个简单的提示音
-        const oscillator = audioContext.createOscillator()
-        const gainNode = audioContext.createGain()
+        // 创建连续的蜂鸣声
+        const beepCount = 8 // 播放8次
+        const beepDuration = 0.2 // 每次蜂鸣0.2秒
+        const beepInterval = 0.3 // 间隔0.3秒
         
-        oscillator.connect(gainNode)
-        gainNode.connect(audioContext.destination)
+        for (let i = 0; i < beepCount; i++) {
+          const startTime = audioContext.currentTime + (i * (beepDuration + beepInterval))
+          
+          const oscillator = audioContext.createOscillator()
+          const gainNode = audioContext.createGain()
+          
+          oscillator.connect(gainNode)
+          gainNode.connect(audioContext.destination)
+          
+          // 设置频率，每次略有不同以产生变化
+          oscillator.frequency.value = 800 + (i % 2) * 100 // 交替800Hz和900Hz
+          oscillator.type = 'sine'
+          
+          // 设置音量渐变
+          gainNode.gain.setValueAtTime(0, startTime)
+          gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.01)
+          gainNode.gain.linearRampToValueAtTime(0.3, startTime + beepDuration - 0.01)
+          gainNode.gain.linearRampToValueAtTime(0, startTime + beepDuration)
+          
+          // 播放声音
+          oscillator.start(startTime)
+          oscillator.stop(startTime + beepDuration)
+        }
         
-        // 设置一个简单的蜂鸣声
-        oscillator.frequency.value = 800 // Hz
-        oscillator.type = 'sine'
-        
-        // 设置音量渐变
-        const now = audioContext.currentTime
-        gainNode.gain.setValueAtTime(0, now)
-        gainNode.gain.linearRampToValueAtTime(0.3, now + 0.01)
-        gainNode.gain.linearRampToValueAtTime(0.3, now + 0.1)
-        gainNode.gain.linearRampToValueAtTime(0, now + 0.2)
-        
-        // 播放声音
-        oscillator.start(now)
-        oscillator.stop(now + 0.2)
-        
-        // 播放三次短音
-        setTimeout(() => {
-          const osc2 = audioContext.createOscillator()
-          const gain2 = audioContext.createGain()
-          osc2.connect(gain2)
-          gain2.connect(audioContext.destination)
-          osc2.frequency.value = 800
-          osc2.type = 'sine'
-          gain2.gain.setValueAtTime(0.3, audioContext.currentTime)
-          gain2.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1)
-          osc2.start()
-          osc2.stop(audioContext.currentTime + 0.1)
-        }, 250)
-        
-        setTimeout(() => {
-          const osc3 = audioContext.createOscillator()
-          const gain3 = audioContext.createGain()
-          osc3.connect(gain3)
-          gain3.connect(audioContext.destination)
-          osc3.frequency.value = 800
-          osc3.type = 'sine'
-          gain3.gain.setValueAtTime(0.3, audioContext.currentTime)
-          gain3.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1)
-          osc3.start()
-          osc3.stop(audioContext.currentTime + 0.1)
-        }, 500)
-        
-        console.log('Web Audio API 提示音播放成功')
+        console.log('Web Audio API 连续提示音设置成功')
         return true
       } catch (error) {
         console.error('Web Audio API 播放失败:', error)
