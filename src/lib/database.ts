@@ -777,14 +777,14 @@ export async function clearTodayTasks(): Promise<void> {
   console.log(`[清空今日任务] 完成，清空 ${clearedCount} 个任务，删除 ${deletedSegments} 个分段`)
 }
 
-// 重置今日任务功能
+// 重置今日任务功能（每天凌晨清理前一天的任务）
 export async function resetTodayTasks(): Promise<void> {
   const userId = getCurrentUserId()
   const now = getBeijingTime()
   
-  console.log('[重置今日任务] 开始执行，用户ID:', userId, '当前时间:', now.toLocaleString('zh-CN'))
+  console.log('[重置今日任务] 开始执行，用户ID:', userId, '当前北京时间:', now.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }))
   
-  // 获取所有有时间安排的任务
+  // 获取所有有时间安排的任务（今日任务）
   const { data: scheduledTasks, error: fetchError } = await supabase
     .from('tasks')
     .select('*')
@@ -830,56 +830,54 @@ export async function resetTodayTasks(): Promise<void> {
         console.log(`[重置今日任务] 跳过已完成的周期性任务（由周期任务重置处理）: ${task.title}`)
       }
     } else if (task.status === 'scheduled' || task.status === 'in-progress') {
-      // 检查任务是否是今天的
-      let isToday = true // 默认保留任务，只有确定是过期任务才清理
-      
-      // 优先检查scheduled_start_time（这是最准确的时间）
-      if (task.scheduled_start_time) {
-        isToday = isBeijingToday(new Date(task.scheduled_start_time))
-      } else if (task.deadline) {
-        // 如果没有scheduled_start_time，检查deadline
-        isToday = isBeijingToday(new Date(task.deadline))
-      }
-      // 如果只有timeSlot没有其他时间信息，默认保留（认为是今天的）
-      
-      // 如果不是今天的任务，才处理
-      if (!isToday) {
-        // 如果是分段任务，删除
-        if (task.original_task_id) {
-          const { error: deleteError } = await supabase
-            .from('tasks')
-            .delete()
-            .eq('id', task.id)
-            .eq('user_id', userId)
-          
-          if (deleteError) {
-            console.error(`[重置今日任务] 删除过期分段任务失败: ${task.title}`, deleteError)
-          } else {
-            console.log(`[重置今日任务] 已删除过期分段任务: ${task.title}`)
-            deletedSegments++
-          }
+      // 如果是分段任务，无论什么时候生成的都删除（分段任务是临时的）
+      if (task.original_task_id) {
+        const { error: deleteError } = await supabase
+          .from('tasks')
+          .delete()
+          .eq('id', task.id)
+          .eq('user_id', userId)
+        
+        if (deleteError) {
+          console.error(`[重置今日任务] 删除分段任务失败: ${task.title}`, deleteError)
         } else {
-          // 普通任务：退回任务池
+          console.log(`[重置今日任务] 已删除分段任务: ${task.title}`)
+          deletedSegments++
+        }
+      } else {
+        // 普通任务：检查是否是今天生成的
+        let isToday = false
+        
+        // 使用scheduled_start_time判断（AI生成任务时会设置这个时间）
+        if (task.scheduled_start_time) {
+          isToday = isBeijingToday(new Date(task.scheduled_start_time))
+          console.log(`[重置今日任务] 任务 "${task.title}" scheduled_start_time: ${task.scheduled_start_time}, 是今天: ${isToday}`)
+        } else if (task.created_at) {
+          // 如果没有scheduled_start_time，使用创建时间判断
+          isToday = isBeijingToday(new Date(task.created_at))
+          console.log(`[重置今日任务] 任务 "${task.title}" 使用created_at判断: ${task.created_at}, 是今天: ${isToday}`)
+        }
+        
+        // 如果不是今天的任务，清除时间安排（不改变status，任务还在任务池）
+        if (!isToday) {
           const { error: updateError } = await supabase
             .from('tasks')
             .update({
-              status: 'pool',
               time_slot: null,
-              scheduled_start_time: null,
-              deadline: null
+              scheduled_start_time: null
             })
             .eq('id', task.id)
             .eq('user_id', userId)
           
           if (updateError) {
-            console.error(`[重置今日任务] 退回任务池失败: ${task.title}`, updateError)
+            console.error(`[重置今日任务] 清除任务时间安排失败: ${task.title}`, updateError)
           } else {
-            console.log(`[重置今日任务] 退回任务池（非今日任务）: ${task.title}`)
+            console.log(`[重置今日任务] 已清除非今日任务的时间安排: ${task.title}`)
             returnToPoolCount++
           }
+        } else {
+          console.log(`[重置今日任务] 保留今日任务: ${task.title}`)
         }
-      } else {
-        console.log(`[重置今日任务] 保留今日未完成任务: ${task.title}`)
       }
     }
   }
